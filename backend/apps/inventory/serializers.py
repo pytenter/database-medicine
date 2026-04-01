@@ -14,6 +14,7 @@ class InventorySerializer(serializers.ModelSerializer):
     medicine_name = serializers.CharField(source="medicine.name", read_only=True)
     medicine_code = serializers.CharField(source="medicine.code", read_only=True)
     manufacturer_name = serializers.CharField(source="medicine.manufacturer.name", read_only=True)
+    retail_price = serializers.DecimalField(source="medicine.retail_price", max_digits=10, decimal_places=2, read_only=True)
     is_warning = serializers.SerializerMethodField()
 
     class Meta:
@@ -26,6 +27,7 @@ class InventorySerializer(serializers.ModelSerializer):
             "medicine_name",
             "medicine_code",
             "manufacturer_name",
+            "retail_price",
             "quantity",
             "warning_threshold",
             "is_warning",

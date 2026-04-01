@@ -32,7 +32,7 @@
 
 <script setup>
 import { computed } from "vue";
-import { useRoute, useRouter, RouterView } from "vue-router";
+import { RouterView, useRoute, useRouter } from "vue-router";
 
 import { useAuthStore } from "../stores/auth";
 
@@ -47,7 +47,9 @@ const allMenus = [
   { path: "/medicines", label: "药品管理", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
   { path: "/inventory", label: "库存管理", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
   { path: "/sales/create", label: "销售开单", roles: ["salesperson"] },
-  { path: "/sales/records", label: "销售记录", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
+  { path: "/sales/records", label: "订单信息", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
+  { path: "/sales/logistics", label: "物流信息", roles: ["salesperson"] },
+  { path: "/sales/reviews", label: "订单评价", roles: ["salesperson"] },
 ];
 
 const visibleMenus = computed(() => allMenus.filter((item) => item.roles.includes(auth.role)));
