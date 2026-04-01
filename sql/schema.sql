@@ -64,7 +64,7 @@ CREATE TABLE medicine (
     code VARCHAR(30) NOT NULL UNIQUE,
     name VARCHAR(100) NOT NULL,
     specification VARCHAR(100) NOT NULL,
-    unit VARCHAR(20) NOT NULL DEFAULT 'box',
+    unit VARCHAR(20) NOT NULL DEFAULT '?',
     purchase_price NUMERIC(10, 2) NOT NULL,
     retail_price NUMERIC(10, 2) NOT NULL,
     manufacturer_id INTEGER NOT NULL,
@@ -153,7 +153,7 @@ SELECT
     mf.name AS manufacturer_name,
     i.quantity,
     i.warning_threshold,
-    CASE WHEN i.quantity <= i.warning_threshold THEN 'LOW' ELSE 'NORMAL' END AS stock_status
+    CASE WHEN i.quantity <= i.warning_threshold THEN '????' ELSE '??' END AS stock_status
 FROM inventory i
 JOIN store s ON i.store_id = s.id
 JOIN medicine m ON i.medicine_id = m.id
@@ -174,7 +174,7 @@ DECLARE
 BEGIN
     SELECT salesperson_id INTO v_salesperson_id FROM sale_order WHERE id = NEW.order_id;
     INSERT INTO operation_log(operator_id, action_type, action_detail)
-    VALUES (v_salesperson_id, 'CREATE_SALE_ITEM', 'Sale item added for medicine_id=' || NEW.medicine_id || ', quantity=' || NEW.quantity);
+    VALUES (v_salesperson_id, '??????', '?????????ID=' || NEW.medicine_id || '???=' || NEW.quantity);
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
