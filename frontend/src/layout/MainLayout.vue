@@ -43,6 +43,7 @@ const auth = useAuthStore();
 const allMenus = [
   { path: "/dashboard", label: "系统首页", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
   { path: "/users", label: "用户管理", roles: ["system_admin"] },
+  { path: "/stores", label: "药店管理", roles: ["system_admin", "pharmacy_admin"] },
   { path: "/medicines", label: "药品管理", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
   { path: "/inventory", label: "库存管理", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
   { path: "/sales/create", label: "销售开单", roles: ["salesperson"] },

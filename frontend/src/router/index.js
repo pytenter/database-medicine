@@ -7,6 +7,7 @@ import LoginView from "../views/LoginView.vue";
 import MedicineManageView from "../views/MedicineManageView.vue";
 import SaleCreateView from "../views/SaleCreateView.vue";
 import SaleRecordView from "../views/SaleRecordView.vue";
+import StoreManageView from "../views/StoreManageView.vue";
 import UserManageView from "../views/UserManageView.vue";
 
 const routes = [
@@ -35,6 +36,12 @@ const routes = [
         name: "users",
         component: UserManageView,
         meta: { title: "用户管理", roles: ["system_admin"] },
+      },
+      {
+        path: "/stores",
+        name: "stores",
+        component: StoreManageView,
+        meta: { title: "药店管理", roles: ["system_admin", "pharmacy_admin"] },
       },
       {
         path: "/medicines",
