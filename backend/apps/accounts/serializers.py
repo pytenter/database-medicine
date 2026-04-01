@@ -1,4 +1,4 @@
-from django.contrib.auth import authenticate
+﻿from django.contrib.auth import authenticate
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -7,6 +7,7 @@ from apps.accounts.models import RoleChoices, User
 
 class UserSerializer(serializers.ModelSerializer):
     store_name = serializers.CharField(source="store.name", read_only=True)
+    role_display = serializers.CharField(source="get_role_display", read_only=True)
 
     class Meta:
         model = User
@@ -15,6 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
             "username",
             "full_name",
             "role",
+            "role_display",
             "phone",
             "email",
             "is_active",
@@ -46,7 +48,7 @@ class UserCreateUpdateSerializer(serializers.ModelSerializer):
         role = attrs.get("role") or getattr(self.instance, "role", None)
         store = attrs.get("store") if "store" in attrs else getattr(self.instance, "store", None)
         if role in {RoleChoices.PHARMACY_ADMIN, RoleChoices.SALESPERSON} and store is None:
-            raise serializers.ValidationError("Pharmacy administrators and salespersons must be assigned to a store.")
+            raise serializers.ValidationError("药店管理员和销售人员必须绑定所属门店。")
         if role == RoleChoices.SYSTEM_ADMIN:
             attrs["store"] = None
         return attrs
@@ -75,9 +77,9 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, attrs):
         user = authenticate(username=attrs["username"], password=attrs["password"])
         if not user:
-            raise serializers.ValidationError("Invalid username or password.")
+            raise serializers.ValidationError("用户名或密码错误。")
         if not user.is_active:
-            raise serializers.ValidationError("This user has been disabled.")
+            raise serializers.ValidationError("当前用户已被停用。")
 
         refresh = RefreshToken.for_user(user)
         return {

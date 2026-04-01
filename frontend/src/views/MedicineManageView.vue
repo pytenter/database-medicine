@@ -1,90 +1,90 @@
-<template>
+﻿<template>
   <div>
     <div class="page-card page-box">
       <div class="toolbar">
         <div>
-          <h3 class="page-title">Medicine Management</h3>
-          <p class="page-subtitle">Support fuzzy search by medicine name, manufacturer, or code.</p>
+          <h3 class="page-title">药品管理</h3>
+          <p class="page-subtitle">支持按药品名称、厂商和编码进行模糊查询。</p>
         </div>
         <div class="toolbar-actions">
-          <el-input v-model="keyword" placeholder="Search medicine" style="width: 260px;" clearable @keyup.enter="loadMedicines" />
-          <el-button @click="loadMedicines">Search</el-button>
-          <el-button v-if="canEdit" type="success" @click="manufacturerDialog = true">New Manufacturer</el-button>
-          <el-button v-if="canEdit" type="warning" @click="categoryDialog = true">New Category</el-button>
-          <el-button v-if="canEdit" type="primary" @click="openDialog()">New Medicine</el-button>
+          <el-input v-model="keyword" placeholder="请输入药品关键词" style="width: 260px;" clearable @keyup.enter="loadMedicines" />
+          <el-button @click="loadMedicines">查询</el-button>
+          <el-button v-if="canEdit" type="success" @click="manufacturerDialog = true">新增厂商</el-button>
+          <el-button v-if="canEdit" type="warning" @click="categoryDialog = true">新增分类</el-button>
+          <el-button v-if="canEdit" type="primary" @click="openDialog()">新增药品</el-button>
         </div>
       </div>
 
       <el-table :data="medicines" border>
-        <el-table-column prop="code" label="Code" width="140" />
-        <el-table-column prop="name" label="Name" min-width="180" />
-        <el-table-column prop="manufacturer_name" label="Manufacturer" min-width="160" />
-        <el-table-column prop="category_name" label="Category" width="140" />
-        <el-table-column prop="retail_price" label="Retail Price" width="120" />
-        <el-table-column prop="expiry_date" label="Expiry Date" width="140" />
-        <el-table-column label="Status" width="100">
+        <el-table-column prop="code" label="药品编码" width="140" />
+        <el-table-column prop="name" label="药品名称" min-width="180" />
+        <el-table-column prop="manufacturer_name" label="生产厂商" min-width="160" />
+        <el-table-column prop="category_name" label="分类" width="140" />
+        <el-table-column prop="retail_price" label="零售价" width="120" />
+        <el-table-column prop="expiry_date" label="有效期至" width="140" />
+        <el-table-column label="状态" width="100">
           <template #default="scope">
-            <el-tag :type="scope.row.is_active ? 'success' : 'info'">{{ scope.row.is_active ? 'Active' : 'Disabled' }}</el-tag>
+            <el-tag :type="scope.row.is_active ? 'success' : 'info'">{{ scope.row.is_active ? '启用' : '停用' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column v-if="canEdit" label="Actions" width="160" fixed="right">
+        <el-table-column v-if="canEdit" label="操作" width="160" fixed="right">
           <template #default="scope">
-            <el-button link type="primary" @click="openDialog(scope.row)">Edit</el-button>
-            <el-button link type="danger" @click="removeMedicine(scope.row)">Delete</el-button>
+            <el-button link type="primary" @click="openDialog(scope.row)">编辑</el-button>
+            <el-button link type="danger" @click="removeMedicine(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
 
-    <el-dialog v-model="dialogVisible" :title="editingId ? 'Edit Medicine' : 'New Medicine'" width="680px">
+    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑药品' : '新增药品'" width="680px">
       <el-form :model="form" label-width="140px">
-        <el-form-item label="Code"><el-input v-model="form.code" /></el-form-item>
-        <el-form-item label="Name"><el-input v-model="form.name" /></el-form-item>
-        <el-form-item label="Specification"><el-input v-model="form.specification" /></el-form-item>
-        <el-form-item label="Unit"><el-input v-model="form.unit" /></el-form-item>
-        <el-form-item label="Purchase Price"><el-input-number v-model="form.purchase_price" :min="0.01" :precision="2" style="width: 100%;" /></el-form-item>
-        <el-form-item label="Retail Price"><el-input-number v-model="form.retail_price" :min="0.01" :precision="2" style="width: 100%;" /></el-form-item>
-        <el-form-item label="Manufacturer">
+        <el-form-item label="药品编码"><el-input v-model="form.code" /></el-form-item>
+        <el-form-item label="药品名称"><el-input v-model="form.name" /></el-form-item>
+        <el-form-item label="规格"><el-input v-model="form.specification" /></el-form-item>
+        <el-form-item label="单位"><el-input v-model="form.unit" /></el-form-item>
+        <el-form-item label="进价"><el-input-number v-model="form.purchase_price" :min="0.01" :precision="2" style="width: 100%;" /></el-form-item>
+        <el-form-item label="零售价"><el-input-number v-model="form.retail_price" :min="0.01" :precision="2" style="width: 100%;" /></el-form-item>
+        <el-form-item label="生产厂商">
           <el-select v-model="form.manufacturer" style="width: 100%;">
             <el-option v-for="item in manufacturers" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="Category">
+        <el-form-item label="药品分类">
           <el-select v-model="form.category" style="width: 100%;">
             <el-option v-for="item in categories" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="Approval Number"><el-input v-model="form.approval_number" /></el-form-item>
-        <el-form-item label="Production Date"><el-date-picker v-model="form.production_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;" /></el-form-item>
-        <el-form-item label="Expiry Date"><el-date-picker v-model="form.expiry_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;" /></el-form-item>
-        <el-form-item label="Status"><el-switch v-model="form.is_active" /></el-form-item>
+        <el-form-item label="批准文号"><el-input v-model="form.approval_number" /></el-form-item>
+        <el-form-item label="生产日期"><el-date-picker v-model="form.production_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;" /></el-form-item>
+        <el-form-item label="有效期至"><el-date-picker v-model="form.expiry_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;" /></el-form-item>
+        <el-form-item label="状态"><el-switch v-model="form.is_active" /></el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="submitForm">Save</el-button>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitForm">保存</el-button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="manufacturerDialog" title="New Manufacturer" width="500px">
+    <el-dialog v-model="manufacturerDialog" title="新增厂商" width="500px">
       <el-form :model="manufacturerForm" label-width="140px">
-        <el-form-item label="Name"><el-input v-model="manufacturerForm.name" /></el-form-item>
-        <el-form-item label="Contact Person"><el-input v-model="manufacturerForm.contact_person" /></el-form-item>
-        <el-form-item label="Contact Phone"><el-input v-model="manufacturerForm.contact_phone" /></el-form-item>
+        <el-form-item label="厂商名称"><el-input v-model="manufacturerForm.name" /></el-form-item>
+        <el-form-item label="联系人"><el-input v-model="manufacturerForm.contact_person" /></el-form-item>
+        <el-form-item label="联系电话"><el-input v-model="manufacturerForm.contact_phone" /></el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="manufacturerDialog = false">Cancel</el-button>
-        <el-button type="primary" @click="submitManufacturer">Save</el-button>
+        <el-button @click="manufacturerDialog = false">取消</el-button>
+        <el-button type="primary" @click="submitManufacturer">保存</el-button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="categoryDialog" title="New Category" width="500px">
+    <el-dialog v-model="categoryDialog" title="新增分类" width="500px">
       <el-form :model="categoryForm" label-width="140px">
-        <el-form-item label="Name"><el-input v-model="categoryForm.name" /></el-form-item>
-        <el-form-item label="Description"><el-input v-model="categoryForm.description" type="textarea" /></el-form-item>
+        <el-form-item label="分类名称"><el-input v-model="categoryForm.name" /></el-form-item>
+        <el-form-item label="分类说明"><el-input v-model="categoryForm.description" type="textarea" /></el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="categoryDialog = false">Cancel</el-button>
-        <el-button type="primary" @click="submitCategory">Save</el-button>
+        <el-button @click="categoryDialog = false">取消</el-button>
+        <el-button type="primary" @click="submitCategory">保存</el-button>
       </template>
     </el-dialog>
   </div>
@@ -177,25 +177,25 @@ const submitForm = async () => {
   const payload = { ...form };
   if (editingId.value) {
     await updateMedicineApi(editingId.value, payload);
-    ElMessage.success("Medicine updated.");
+    ElMessage.success("药品修改成功。")
   } else {
     await createMedicineApi(payload);
-    ElMessage.success("Medicine created.");
+    ElMessage.success("药品创建成功。")
   }
   dialogVisible.value = false;
   loadMedicines();
 };
 
 const removeMedicine = async (row) => {
-  await ElMessageBox.confirm(`Delete medicine ${row.name}?`, "Warning", { type: "warning" });
+  await ElMessageBox.confirm(`确认删除药品 ${row.name} 吗？`, "提示", { type: "warning" });
   await deleteMedicineApi(row.id);
-  ElMessage.success("Medicine deleted.");
+  ElMessage.success("药品删除成功。")
   loadMedicines();
 };
 
 const submitManufacturer = async () => {
   await createManufacturerApi(manufacturerForm);
-  ElMessage.success("Manufacturer created.");
+  ElMessage.success("厂商创建成功。")
   manufacturerDialog.value = false;
   Object.assign(manufacturerForm, { name: "", contact_person: "", contact_phone: "" });
   loadBaseData();
@@ -203,7 +203,7 @@ const submitManufacturer = async () => {
 
 const submitCategory = async () => {
   await createCategoryApi(categoryForm);
-  ElMessage.success("Category created.");
+  ElMessage.success("分类创建成功。")
   categoryDialog.value = false;
   Object.assign(categoryForm, { name: "", description: "" });
   loadBaseData();

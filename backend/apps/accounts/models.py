@@ -1,13 +1,13 @@
-from django.contrib.auth.models import AbstractUser
+﻿from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from apps.common.models import TimeStampedModel
 
 
 class RoleChoices(models.TextChoices):
-    SYSTEM_ADMIN = "system_admin", "System Administrator"
-    PHARMACY_ADMIN = "pharmacy_admin", "Pharmacy Administrator"
-    SALESPERSON = "salesperson", "Salesperson"
+    SYSTEM_ADMIN = "system_admin", "系统管理员"
+    PHARMACY_ADMIN = "pharmacy_admin", "药店管理员"
+    SALESPERSON = "salesperson", "销售人员"
 
 
 class User(AbstractUser, TimeStampedModel):

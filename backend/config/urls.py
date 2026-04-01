@@ -1,4 +1,4 @@
-from django.contrib import admin
+﻿from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import include, path
 
@@ -6,9 +6,9 @@ from django.urls import include, path
 def api_root(_request):
     return JsonResponse(
         {
-            "project": "Chain Pharmacy Management System",
-            "status": "running",
-            "message": "Backend service is available. Use the frontend at http://127.0.0.1:5173 or call /api/* endpoints.",
+            "project": "连锁药店管理系统",
+            "status": "运行中",
+            "message": "后端服务运行正常。请使用 http://127.0.0.1:5173/ 访问前端，或调用 /api/* 接口。",
             "routes": {
                 "login": "/api/auth/login/",
                 "current_user": "/api/auth/me/",
@@ -30,3 +30,4 @@ urlpatterns = [
     path("api/inventory/", include("apps.inventory.urls")),
     path("api/sales/", include("apps.sales.urls")),
 ]
+

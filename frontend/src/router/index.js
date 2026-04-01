@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router";
+﻿import { createRouter, createWebHistory } from "vue-router";
 
 import MainLayout from "../layout/MainLayout.vue";
 import DashboardView from "../views/DashboardView.vue";
@@ -28,37 +28,37 @@ const routes = [
         path: "/dashboard",
         name: "dashboard",
         component: DashboardView,
-        meta: { title: "Dashboard", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
+        meta: { title: "系统首页", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
       },
       {
         path: "/users",
         name: "users",
         component: UserManageView,
-        meta: { title: "User Management", roles: ["system_admin"] },
+        meta: { title: "用户管理", roles: ["system_admin"] },
       },
       {
         path: "/medicines",
         name: "medicines",
         component: MedicineManageView,
-        meta: { title: "Medicine Management", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
+        meta: { title: "药品管理", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
       },
       {
         path: "/inventory",
         name: "inventory",
         component: InventoryView,
-        meta: { title: "Inventory Management", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
+        meta: { title: "库存管理", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
       },
       {
         path: "/sales/create",
         name: "sale-create",
         component: SaleCreateView,
-        meta: { title: "Create Sale", roles: ["salesperson"] },
+        meta: { title: "销售开单", roles: ["salesperson"] },
       },
       {
         path: "/sales/records",
         name: "sale-records",
         component: SaleRecordView,
-        meta: { title: "Sales Records", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
+        meta: { title: "销售记录", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
       },
     ],
   },
@@ -92,4 +92,3 @@ router.beforeEach((to, from, next) => {
 });
 
 export default router;
-

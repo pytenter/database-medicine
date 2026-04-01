@@ -1,4 +1,4 @@
-from rest_framework import serializers
+﻿from rest_framework import serializers
 
 from apps.medicine.models import Manufacturer, Medicine, MedicineCategory
 
@@ -45,7 +45,7 @@ class MedicineSerializer(serializers.ModelSerializer):
         purchase_price = attrs.get("purchase_price", getattr(self.instance, "purchase_price", None))
         retail_price = attrs.get("retail_price", getattr(self.instance, "retail_price", None))
         if purchase_price is not None and purchase_price <= 0:
-            raise serializers.ValidationError("Purchase price must be greater than 0.")
+            raise serializers.ValidationError("进价必须大于 0。")
         if retail_price is not None and retail_price <= 0:
-            raise serializers.ValidationError("Retail price must be greater than 0.")
+            raise serializers.ValidationError("零售价必须大于 0。")
         return attrs

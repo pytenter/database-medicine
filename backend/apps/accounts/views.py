@@ -1,4 +1,4 @@
-from rest_framework import permissions, status, viewsets
+﻿from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -38,4 +38,4 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.get_object()
         user.set_password("Admin@123")
         user.save(update_fields=["password"])
-        return Response({"message": "Password has been reset to Admin@123."})
+        return Response({"message": "密码已重置为 Admin@123。"})

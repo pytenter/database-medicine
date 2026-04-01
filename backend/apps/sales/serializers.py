@@ -1,4 +1,4 @@
-from decimal import Decimal
+﻿from decimal import Decimal
 from uuid import uuid4
 
 from django.db import transaction
@@ -52,9 +52,9 @@ class SaleCreateSerializer(serializers.Serializer):
     def validate(self, attrs):
         user = self.context["request"].user
         if not user.store_id:
-            raise serializers.ValidationError("The salesperson is not assigned to a store.")
+            raise serializers.ValidationError("当前销售人员未绑定所属门店。")
         if not attrs["items"]:
-            raise serializers.ValidationError("At least one item is required.")
+            raise serializers.ValidationError("请至少选择一条销售明细。")
 
         insufficient_items = []
         for item in attrs["items"]:
@@ -63,10 +63,10 @@ class SaleCreateSerializer(serializers.Serializer):
                 medicine_id=item["medicine_id"],
             ).first()
             if not inventory:
-                insufficient_items.append(f"Medicine ID {item['medicine_id']} is not in the current store inventory.")
+                insufficient_items.append(f"药品 ID {item['medicine_id']} 不在当前门店库存中。")
                 continue
             if inventory.quantity < item["quantity"]:
-                insufficient_items.append(f"{inventory.medicine.name} only has {inventory.quantity} items left.")
+                insufficient_items.append(f"{inventory.medicine.name} 库存不足，当前仅剩 {inventory.quantity} 件。")
 
         if insufficient_items:
             raise serializers.ValidationError({"items": insufficient_items})

@@ -1,27 +1,27 @@
-<template>
+﻿<template>
   <div class="login-shell">
     <div class="login-panel page-card">
       <div class="login-copy">
-        <div class="login-tag">COURSE DESIGN</div>
-        <h1>Chain Pharmacy Management System</h1>
+        <div class="login-tag">数据库课程设计</div>
+        <h1>连锁药店管理系统</h1>
         <p>Vue 3 + Django + openGauss</p>
       </div>
       <el-form :model="form" :rules="rules" ref="formRef" label-position="top" @keyup.enter="handleLogin">
-        <el-form-item label="Username" prop="username">
-          <el-input v-model="form.username" placeholder="Enter your username" />
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="form.username" placeholder="请输入用户名" />
         </el-form-item>
-        <el-form-item label="Password" prop="password">
-          <el-input v-model="form.password" show-password placeholder="Enter your password" />
+        <el-form-item label="密码" prop="password">
+          <el-input v-model="form.password" show-password placeholder="请输入密码" />
         </el-form-item>
         <el-button type="primary" size="large" style="width: 100%;" :loading="loading" @click="handleLogin">
-          Login
+          登录
         </el-button>
       </el-form>
       <div class="demo-users">
-        <p>Demo users:</p>
-        <p>`sysadmin / Admin@123`</p>
-        <p>`storeadmin / Admin@123`</p>
-        <p>`sales01 / Admin@123`</p>
+        <p>演示账号：</p>
+        <p>sysadmin / Admin@123</p>
+        <p>storeadmin / Admin@123</p>
+        <p>sales01 / Admin@123</p>
       </div>
     </div>
   </div>
@@ -43,13 +43,13 @@ const form = reactive({
   password: "Admin@123",
 });
 const rules = {
-  username: [{ required: true, message: "Please input username", trigger: "blur" }],
-  password: [{ required: true, message: "Please input password", trigger: "blur" }],
+  username: [{ required: true, message: "请输入用户名", trigger: "blur" }],
+  password: [{ required: true, message: "请输入密码", trigger: "blur" }],
 };
 
 const resolveErrorMessage = (error) => {
   if (!error.response) {
-    return "Cannot connect to backend. Make sure Django is running at http://127.0.0.1:8000/.";
+    return "无法连接后端服务，请确认 Django 已运行在 http://127.0.0.1:8000/。";
   }
 
   const data = error.response.data;
@@ -69,7 +69,7 @@ const resolveErrorMessage = (error) => {
   if (typeof firstValue === "string") {
     return firstValue;
   }
-  return "Login failed.";
+  return "登录失败。";
 };
 
 const handleLogin = async () => {
@@ -77,7 +77,7 @@ const handleLogin = async () => {
   loading.value = true;
   try {
     await auth.login(form);
-    ElMessage.success("Login successful.");
+    ElMessage.success("登录成功。");
     router.push("/dashboard");
   } catch (error) {
     ElMessage.error(resolveErrorMessage(error));

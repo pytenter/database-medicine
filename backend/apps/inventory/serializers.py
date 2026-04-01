@@ -1,4 +1,4 @@
-from rest_framework import serializers
+﻿from rest_framework import serializers
 
 from apps.inventory.models import Inventory, Store
 
@@ -38,10 +38,10 @@ class InventorySerializer(serializers.ModelSerializer):
 
     def validate_quantity(self, value):
         if value < 0:
-            raise serializers.ValidationError("Quantity cannot be negative.")
+            raise serializers.ValidationError("库存数量不能为负数。")
         return value
 
     def validate_warning_threshold(self, value):
         if value < 0:
-            raise serializers.ValidationError("Warning threshold cannot be negative.")
+            raise serializers.ValidationError("预警阈值不能为负数。")
         return value
