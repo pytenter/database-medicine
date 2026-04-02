@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-card logistics-page">
     <div class="toolbar logistics-toolbar">
       <div>
@@ -52,10 +52,15 @@
           <div class="block-title">更新物流</div>
           <el-form :model="logisticsForm" label-position="top">
             <el-form-item label="物流备注">
-              <el-input v-model="logisticsForm.content" type="textarea" :rows="5" placeholder="请输入物流更新内容，例如：配送员正在派送。" />
+              <el-input
+                v-model="logisticsForm.content"
+                type="textarea"
+                :rows="5"
+                placeholder="请输入物流更新内容，例如：配送员正在配送。"
+              />
             </el-form-item>
             <el-form-item label="同步更新订单状态">
-              <el-select v-model="logisticsForm.status_after" placeholder="不修改状态" clearable style="width: 220px;">
+              <el-select v-model="logisticsForm.status_after" placeholder="不修改状态" clearable style="width: 220px;" @change="handleStatusChange">
                 <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
@@ -84,6 +89,13 @@ const dialogVisible = ref(false);
 const currentOrder = ref(null);
 const submitting = ref(false);
 const logisticsForm = reactive({ content: "", status_after: "" });
+const contentAutofilled = ref(false);
+
+const statusContentMap = {
+  ordered: "等待配送",
+  delivering: "配送员正在配送",
+  completed: "订单已送达",
+};
 
 const statusOptions = [
   { label: "待付款", value: "pending_payment" },
@@ -96,7 +108,32 @@ const formatDateTime = (value) => {
   if (!value) return "-";
   return value.replace("T", " ").slice(0, 16);
 };
+
 const statusTagType = (status) => ({ pending_payment: "warning", ordered: "info", delivering: "primary", completed: "success" }[status] || "info");
+
+const handleStatusChange = (value) => {
+  if (!value) return;
+  const current = (logisticsForm.content || "").trim();
+  const legacyTexts = [
+    "等待配送",
+    "配送员正在配送",
+    "订单已送达",
+    "正在配送",
+    "订单已创建，等待门店备货。",
+    "药店已完成拣货，配送员正在派送。",
+    "订单已完成签收，客户已收货。",
+    "????",
+    "???????",
+  ];
+  if (!current || contentAutofilled.value || legacyTexts.includes(current)) {
+    logisticsForm.content = statusContentMap[value] || logisticsForm.content;
+    contentAutofilled.value = true;
+  }
+};
+
+const handleContentInput = () => {
+  contentAutofilled.value = false;
+};
 
 const loadSales = async () => {
   const params = {};
@@ -117,6 +154,7 @@ const openDialog = async (row) => {
   currentOrder.value = data;
   logisticsForm.content = "";
   logisticsForm.status_after = "";
+  contentAutofilled.value = false;
   dialogVisible.value = true;
 };
 
@@ -169,6 +207,12 @@ onMounted(loadSales);
   font-size: 16px;
   font-weight: 700;
   color: #0f172a;
+}
+
+.form-hint {
+  margin-top: 8px;
+  color: #94a3b8;
+  font-size: 12px;
 }
 
 .dialog-actions {

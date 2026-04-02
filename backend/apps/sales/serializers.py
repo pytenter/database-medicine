@@ -165,7 +165,7 @@ class SaleCreateSerializer(serializers.Serializer):
         order.save(update_fields=["total_amount", "updated_at"])
         OrderLogistics.objects.create(
             order=order,
-            content="?????????????",
+            content="ç­å¾éé",
             operator_name=user.full_name or user.username,
             status_after=SaleOrderStatusChoices.ORDERED,
         )
@@ -184,11 +184,30 @@ class LogisticsUpdateSerializer(serializers.Serializer):
     def create(self, validated_data):
         order = self.context["order"]
         user = self.context["request"].user
+        status_after = validated_data.get("status_after", "")
+        content = (validated_data.get("content") or "").strip()
+        standard_map = {
+            SaleOrderStatusChoices.ORDERED: "\u7b49\u5f85\u914d\u9001",
+            SaleOrderStatusChoices.DELIVERING: "\u914d\u9001\u5458\u6b63\u5728\u914d\u9001",
+            SaleOrderStatusChoices.COMPLETED: "\u8ba2\u5355\u5df2\u9001\u8fbe",
+        }
+        legacy_map = {
+            "\u8ba2\u5355\u5df2\u521b\u5efa\uff0c\u7b49\u5f85\u95e8\u5e97\u5907\u8d27\u3002": standard_map[SaleOrderStatusChoices.ORDERED],
+            "\u836f\u5e97\u5df2\u5b8c\u6210\u62e3\u8d27\uff0c\u914d\u9001\u5458\u6b63\u5728\u6d3e\u9001\u3002": standard_map[SaleOrderStatusChoices.DELIVERING],
+            "\u8ba2\u5355\u5df2\u5b8c\u6210\u7b7e\u6536\uff0c\u5ba2\u6237\u5df2\u6536\u8d27\u3002": standard_map[SaleOrderStatusChoices.COMPLETED],
+            "\u6b63\u5728\u914d\u9001": standard_map[SaleOrderStatusChoices.DELIVERING],
+            "????": standard_map[SaleOrderStatusChoices.ORDERED],
+            "???????": standard_map[SaleOrderStatusChoices.ORDERED],
+        }
+        content = legacy_map.get(content, content)
+        if status_after in standard_map and not content:
+            content = standard_map[status_after]
+
         logistics = OrderLogistics.objects.create(
             order=order,
-            content=validated_data["content"],
+            content=content,
             operator_name=user.full_name or user.username,
-            status_after=validated_data.get("status_after", ""),
+            status_after=status_after,
         )
         if validated_data.get("status_after"):
             order.order_status = validated_data["status_after"]
