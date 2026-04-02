@@ -12,5 +12,12 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
     search_fields = ["title", "content"]
     ordering_fields = ["id", "created_at", "updated_at"]
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search = self.request.query_params.get("search")
+        if search:
+            queryset = queryset.filter(title__icontains=search) | queryset.filter(content__icontains=search)
+        return queryset
+
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
