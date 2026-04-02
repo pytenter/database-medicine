@@ -24,8 +24,8 @@ class InventoryPermission(permissions.BasePermission):
         if not request.user.is_authenticated:
             return False
         if request.method in permissions.SAFE_METHODS:
-            return request.user.role in {"system_admin", "pharmacy_admin", "salesperson"}
-        return request.user.role in {"system_admin", "pharmacy_admin"}
+            return request.user.role in {"pharmacy_admin", "salesperson"}
+        return request.user.role == "pharmacy_admin"
 
 
 class InventoryViewSet(viewsets.ModelViewSet):
@@ -44,7 +44,7 @@ class InventoryViewSet(viewsets.ModelViewSet):
     def _validate_store_scope(self, store_id):
         user = self.request.user
         if user.role == "pharmacy_admin" and user.store_id != store_id:
-            raise PermissionDenied("Pharmacy administrators can only maintain inventory for their own store.")
+            raise PermissionDenied("???????????????")
 
     def perform_create(self, serializer):
         self._validate_store_scope(serializer.validated_data["store"].id)

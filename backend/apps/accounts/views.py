@@ -1,9 +1,9 @@
-﻿from rest_framework import permissions, status, viewsets
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.accounts.models import User
+from apps.accounts.models import RoleChoices, User
 from apps.accounts.permissions import IsSystemAdmin
 from apps.accounts.serializers import LoginSerializer, UserCreateUpdateSerializer, UserSerializer
 
@@ -28,6 +28,13 @@ class UserViewSet(viewsets.ModelViewSet):
     search_fields = ["username", "full_name", "phone", "email"]
     ordering_fields = ["id", "username", "created_at"]
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        role_value = self.request.query_params.get("role")
+        if role_value in {RoleChoices.PHARMACY_ADMIN, RoleChoices.SALESPERSON}:
+            queryset = queryset.filter(role=role_value)
+        return queryset
+
     def get_serializer_class(self):
         if self.action in {"create", "update", "partial_update"}:
             return UserCreateUpdateSerializer
@@ -38,4 +45,4 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.get_object()
         user.set_password("Admin@123")
         user.save(update_fields=["password"])
-        return Response({"message": "密码已重置为 Admin@123。"})
+        return Response({"message": "?????? Admin@123?"})

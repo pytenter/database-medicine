@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "apps.common",
     "apps.accounts",
+    "apps.announcements",
     "apps.medicine",
     "apps.inventory",
     "apps.sales",

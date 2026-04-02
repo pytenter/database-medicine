@@ -1,4 +1,4 @@
-﻿from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -48,7 +48,7 @@ class UserCreateUpdateSerializer(serializers.ModelSerializer):
         role = attrs.get("role") or getattr(self.instance, "role", None)
         store = attrs.get("store") if "store" in attrs else getattr(self.instance, "store", None)
         if role in {RoleChoices.PHARMACY_ADMIN, RoleChoices.SALESPERSON} and store is None:
-            raise serializers.ValidationError("药店管理员和销售人员必须绑定所属门店。")
+            raise serializers.ValidationError("???????????????????")
         if role == RoleChoices.SYSTEM_ADMIN:
             attrs["store"] = None
         return attrs
@@ -77,9 +77,9 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, attrs):
         user = authenticate(username=attrs["username"], password=attrs["password"])
         if not user:
-            raise serializers.ValidationError("用户名或密码错误。")
+            raise serializers.ValidationError("?????????")
         if not user.is_active:
-            raise serializers.ValidationError("当前用户已被停用。")
+            raise serializers.ValidationError("?????????")
 
         refresh = RefreshToken.for_user(user)
         return {

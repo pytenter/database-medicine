@@ -1,16 +1,19 @@
-﻿import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 
 import MainLayout from "../layout/MainLayout.vue";
+import AnnouncementManageView from "../views/AnnouncementManageView.vue";
 import DashboardView from "../views/DashboardView.vue";
 import InventoryView from "../views/InventoryView.vue";
 import LoginView from "../views/LoginView.vue";
 import LogisticsManageView from "../views/LogisticsManageView.vue";
 import MedicineManageView from "../views/MedicineManageView.vue";
 import OrderReviewView from "../views/OrderReviewView.vue";
+import PharmacyAdminManageView from "../views/PharmacyAdminManageView.vue";
+import RevenueComparisonView from "../views/RevenueComparisonView.vue";
 import SaleCreateView from "../views/SaleCreateView.vue";
 import SaleRecordView from "../views/SaleRecordView.vue";
+import SalespersonManageView from "../views/SalespersonManageView.vue";
 import StoreManageView from "../views/StoreManageView.vue";
-import UserManageView from "../views/UserManageView.vue";
 
 const routes = [
   {
@@ -23,21 +26,12 @@ const routes = [
     path: "/",
     component: MainLayout,
     children: [
-      {
-        path: "",
-        redirect: "/dashboard",
-      },
+      { path: "", redirect: "/dashboard" },
       {
         path: "/dashboard",
         name: "dashboard",
         component: DashboardView,
-        meta: { title: "系统首页", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
-      },
-      {
-        path: "/users",
-        name: "users",
-        component: UserManageView,
-        meta: { title: "用户管理", roles: ["system_admin"] },
+        meta: { title: "首页概览", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
       },
       {
         path: "/stores",
@@ -46,16 +40,40 @@ const routes = [
         meta: { title: "药店管理", roles: ["system_admin", "pharmacy_admin"] },
       },
       {
+        path: "/users/pharmacy-admins",
+        name: "pharmacy-admins",
+        component: PharmacyAdminManageView,
+        meta: { title: "药店管理员管理", roles: ["system_admin"] },
+      },
+      {
+        path: "/users/salespeople",
+        name: "salespeople",
+        component: SalespersonManageView,
+        meta: { title: "销售人员管理", roles: ["system_admin"] },
+      },
+      {
+        path: "/announcements",
+        name: "announcements",
+        component: AnnouncementManageView,
+        meta: { title: "公告管理", roles: ["system_admin"] },
+      },
+      {
+        path: "/revenue-comparison",
+        name: "revenue-comparison",
+        component: RevenueComparisonView,
+        meta: { title: "营业额对比", roles: ["system_admin"] },
+      },
+      {
         path: "/medicines",
         name: "medicines",
         component: MedicineManageView,
-        meta: { title: "药品管理", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
+        meta: { title: "药品管理", roles: ["pharmacy_admin", "salesperson"] },
       },
       {
         path: "/inventory",
         name: "inventory",
         component: InventoryView,
-        meta: { title: "库存管理", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
+        meta: { title: "库存管理", roles: ["pharmacy_admin", "salesperson"] },
       },
       {
         path: "/sales/create",
