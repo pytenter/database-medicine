@@ -1,9 +1,4 @@
-﻿CREATE TABLE announcement (
-    id SERIAL PRIMARY KEY,
-    title VARCHAR(120) NOT NULL,
-    content TEXT NOT NULL,
-    is_published BOOLEAN NOT NULL DEFAULT TRUE,
-    created_by_id INTEGER NULL REFERENCES sys_user(id),
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+-- Compatibility note
+-- The announcement table definition has been merged into schema.sql.
+-- For a fresh deployment, execute schema.sql and then init_data.sql.
+-- This file is intentionally kept as a no-op for backward compatibility.
