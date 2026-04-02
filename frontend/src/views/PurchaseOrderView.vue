@@ -23,7 +23,7 @@
       <el-table-column prop="purchaser_name" label="采购人" min-width="120" />
       <el-table-column prop="planned_date" label="计划到货" width="120" />
       <el-table-column prop="total_amount" label="采购金额" width="120">
-        <template #default="scope">? {{ Number(scope.row.total_amount).toFixed(2) }}</template>
+        <template #default="scope">{{ formatMoney(scope.row.total_amount) }}</template>
       </el-table-column>
       <el-table-column prop="status_display" label="采购状态" width="110">
         <template #default="scope">
@@ -124,6 +124,8 @@ const formatDateTime = (value) => {
   if (!value) return "-";
   return value.slice(0, 16).replace("T", " ");
 };
+
+const formatMoney = (value) => `￥ ${Number(value || 0).toFixed(2)}`;
 
 const statusTagType = (status) => ({ pending: "warning", ordered: "primary", received: "success", cancelled: "info" }[status] || "info");
 

@@ -12,7 +12,7 @@
         </el-select>
         <el-button @click="loadSales">查询</el-button>
         <el-button @click="resetFilters">重置</el-button>
-        <el-button type="primary" @click="goCreate">新增订单</el-button>
+        <el-button v-if="canCreateOrder" type="primary" @click="goCreate">新增订单</el-button>
       </div>
     </div>
 
@@ -115,7 +115,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import { getSaleDetailApi, getSalesApi } from "../api/sales";
@@ -128,6 +128,7 @@ const keyword = ref("");
 const statusFilter = ref("");
 const detailVisible = ref(false);
 const currentOrder = ref(null);
+const canCreateOrder = computed(() => auth.role === "salesperson");
 
 const statusOptions = [
   { label: "待付款", value: "pending_payment" },
