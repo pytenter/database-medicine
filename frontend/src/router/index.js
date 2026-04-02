@@ -6,13 +6,16 @@ import DashboardView from "../views/DashboardView.vue";
 import InventoryView from "../views/InventoryView.vue";
 import LoginView from "../views/LoginView.vue";
 import LogisticsManageView from "../views/LogisticsManageView.vue";
+import ManufacturerManageView from "../views/ManufacturerManageView.vue";
 import MedicineManageView from "../views/MedicineManageView.vue";
 import OrderReviewView from "../views/OrderReviewView.vue";
 import PharmacyAdminManageView from "../views/PharmacyAdminManageView.vue";
+import PurchaseOrderView from "../views/PurchaseOrderView.vue";
 import RevenueComparisonView from "../views/RevenueComparisonView.vue";
 import SaleCreateView from "../views/SaleCreateView.vue";
 import SaleRecordView from "../views/SaleRecordView.vue";
 import SalespersonManageView from "../views/SalespersonManageView.vue";
+import ShiftScheduleView from "../views/ShiftScheduleView.vue";
 import StoreManageView from "../views/StoreManageView.vue";
 
 const routes = [
@@ -37,7 +40,7 @@ const routes = [
         path: "/stores",
         name: "stores",
         component: StoreManageView,
-        meta: { title: "药店管理", roles: ["system_admin", "pharmacy_admin"] },
+        meta: { title: "药店管理", roles: ["system_admin"] },
       },
       {
         path: "/users/pharmacy-admins",
@@ -64,6 +67,12 @@ const routes = [
         meta: { title: "营业额对比", roles: ["system_admin"] },
       },
       {
+        path: "/manufacturers",
+        name: "manufacturers",
+        component: ManufacturerManageView,
+        meta: { title: "厂商管理", roles: ["pharmacy_admin"] },
+      },
+      {
         path: "/medicines",
         name: "medicines",
         component: MedicineManageView,
@@ -74,6 +83,18 @@ const routes = [
         name: "inventory",
         component: InventoryView,
         meta: { title: "库存管理", roles: ["pharmacy_admin", "salesperson"] },
+      },
+      {
+        path: "/purchase-orders",
+        name: "purchase-orders",
+        component: PurchaseOrderView,
+        meta: { title: "采购订单", roles: ["pharmacy_admin"] },
+      },
+      {
+        path: "/shift-schedules",
+        name: "shift-schedules",
+        component: ShiftScheduleView,
+        meta: { title: "班次排班", roles: ["pharmacy_admin"] },
       },
       {
         path: "/sales/create",

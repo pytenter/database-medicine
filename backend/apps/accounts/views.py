@@ -1,11 +1,17 @@
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.accounts.models import RoleChoices, User
-from apps.accounts.permissions import IsSystemAdmin
-from apps.accounts.serializers import LoginSerializer, UserCreateUpdateSerializer, UserSerializer
+from apps.accounts.models import RoleChoices, ShiftSchedule, User
+from apps.accounts.permissions import IsPharmacyAdmin, IsSystemAdmin
+from apps.accounts.serializers import (
+    LoginSerializer,
+    ShiftScheduleSerializer,
+    UserCreateUpdateSerializer,
+    UserSerializer,
+)
 
 
 class LoginView(APIView):
@@ -45,4 +51,48 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.get_object()
         user.set_password("Admin@123")
         user.save(update_fields=["password"])
-        return Response({"message": "?????? Admin@123?"})
+        return Response({"message": "密码已重置为 Admin@123。"})
+
+
+class ShiftScheduleViewSet(viewsets.ModelViewSet):
+    serializer_class = ShiftScheduleSerializer
+    permission_classes = [IsPharmacyAdmin]
+    search_fields = ["salesperson__full_name", "salesperson__username", "note"]
+    ordering_fields = ["shift_date", "start_time", "created_at"]
+
+    def get_queryset(self):
+        queryset = ShiftSchedule.objects.select_related("store", "salesperson", "created_by").all().order_by("-shift_date", "start_time", "id")
+        user = self.request.user
+        if user.store_id:
+            queryset = queryset.filter(store_id=user.store_id, salesperson__role=RoleChoices.SALESPERSON)
+        else:
+            queryset = queryset.none()
+        salesperson_id = self.request.query_params.get("salesperson")
+        if salesperson_id:
+            queryset = queryset.filter(salesperson_id=salesperson_id)
+        shift_date = self.request.query_params.get("shift_date")
+        if shift_date:
+            queryset = queryset.filter(shift_date=shift_date)
+        return queryset
+
+    @action(methods=["get"], detail=False)
+    def salespeople(self, request):
+        queryset = User.objects.filter(role=RoleChoices.SALESPERSON, store_id=request.user.store_id, is_active=True).order_by("id")
+        return Response(UserSerializer(queryset, many=True).data)
+
+    def _validate_scope(self, serializer):
+        user = self.request.user
+        store = serializer.validated_data.get("store", getattr(serializer.instance, "store", None))
+        salesperson = serializer.validated_data.get("salesperson", getattr(serializer.instance, "salesperson", None))
+        if not user.store_id or not store or store.id != user.store_id:
+            raise PermissionDenied("只能管理所属门店的班次排班。")
+        if salesperson is None or salesperson.role != RoleChoices.SALESPERSON or salesperson.store_id != user.store_id:
+            raise PermissionDenied("只能为当前门店销售人员排班。")
+
+    def perform_create(self, serializer):
+        self._validate_scope(serializer)
+        serializer.save(created_by=self.request.user)
+
+    def perform_update(self, serializer):
+        self._validate_scope(serializer)
+        serializer.save(created_by=self.request.user)

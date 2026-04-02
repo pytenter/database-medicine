@@ -1,4 +1,4 @@
-﻿from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from apps.common.models import TimeStampedModel
@@ -31,3 +31,27 @@ class User(AbstractUser, TimeStampedModel):
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
+
+
+class ShiftPeriodChoices(models.TextChoices):
+    MORNING = "morning", "早班"
+    AFTERNOON = "afternoon", "中班"
+    EVENING = "evening", "晚班"
+
+
+class ShiftSchedule(TimeStampedModel):
+    store = models.ForeignKey("inventory.Store", on_delete=models.CASCADE, related_name="shift_schedules")
+    salesperson = models.ForeignKey(User, on_delete=models.CASCADE, related_name="shift_schedules")
+    shift_date = models.DateField(verbose_name="Shift Date")
+    shift_period = models.CharField(max_length=20, choices=ShiftPeriodChoices.choices, verbose_name="Shift Period")
+    start_time = models.TimeField(verbose_name="Start Time")
+    end_time = models.TimeField(verbose_name="End Time")
+    note = models.CharField(max_length=255, blank=True, verbose_name="Note")
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="created_shift_schedules")
+
+    class Meta:
+        db_table = "shift_schedule"
+        ordering = ["-shift_date", "start_time", "id"]
+
+    def __str__(self):
+        return f"{self.salesperson.full_name} - {self.shift_date}"

@@ -42,13 +42,16 @@ const auth = useAuthStore();
 
 const allMenus = [
   { path: "/dashboard", label: "首页概览", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
-  { path: "/stores", label: "药店管理", roles: ["system_admin", "pharmacy_admin"] },
+  { path: "/stores", label: "药店管理", roles: ["system_admin"] },
   { path: "/users/pharmacy-admins", label: "药店管理员管理", roles: ["system_admin"] },
   { path: "/users/salespeople", label: "销售人员管理", roles: ["system_admin"] },
   { path: "/announcements", label: "公告管理", roles: ["system_admin"] },
   { path: "/revenue-comparison", label: "营业额对比", roles: ["system_admin"] },
+  { path: "/manufacturers", label: "厂商管理", roles: ["pharmacy_admin"] },
   { path: "/medicines", label: "药品管理", roles: ["pharmacy_admin", "salesperson"] },
   { path: "/inventory", label: "库存管理", roles: ["pharmacy_admin", "salesperson"] },
+  { path: "/purchase-orders", label: "采购订单", roles: ["pharmacy_admin"] },
+  { path: "/shift-schedules", label: "班次排班", roles: ["pharmacy_admin"] },
   { path: "/sales/create", label: "销售开单", roles: ["salesperson"] },
   { path: "/sales/records", label: "订单信息", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
   { path: "/sales/logistics", label: "物流信息", roles: ["salesperson"] },

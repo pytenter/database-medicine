@@ -1,22 +1,18 @@
 from rest_framework import permissions, viewsets
 from rest_framework.exceptions import PermissionDenied
 
-from apps.accounts.permissions import IsSystemOrPharmacyAdmin
-from apps.inventory.models import Inventory, Store
-from apps.inventory.serializers import InventorySerializer, StoreSerializer
+from apps.accounts.permissions import IsPharmacyAdmin, IsSystemAdmin
+from apps.inventory.models import Inventory, PurchaseOrder, Store
+from apps.inventory.serializers import InventorySerializer, PurchaseOrderSerializer, StoreSerializer
 
 
 class StoreViewSet(viewsets.ModelViewSet):
     serializer_class = StoreSerializer
-    permission_classes = [IsSystemOrPharmacyAdmin]
+    permission_classes = [IsSystemAdmin]
     search_fields = ["code", "name", "address", "manager_name"]
 
     def get_queryset(self):
-        queryset = Store.objects.all().order_by("id")
-        user = self.request.user
-        if user.role == "pharmacy_admin" and user.store_id:
-            queryset = queryset.filter(id=user.store_id)
-        return queryset
+        return Store.objects.all().order_by("id")
 
 
 class InventoryPermission(permissions.BasePermission):
@@ -44,7 +40,7 @@ class InventoryViewSet(viewsets.ModelViewSet):
     def _validate_store_scope(self, store_id):
         user = self.request.user
         if user.role == "pharmacy_admin" and user.store_id != store_id:
-            raise PermissionDenied("???????????????")
+            raise PermissionDenied("只能维护所属门店的库存记录。")
 
     def perform_create(self, serializer):
         self._validate_store_scope(serializer.validated_data["store"].id)
@@ -52,4 +48,38 @@ class InventoryViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         self._validate_store_scope(serializer.validated_data.get("store", serializer.instance.store).id)
+        serializer.save()
+
+
+class PurchaseOrderViewSet(viewsets.ModelViewSet):
+    serializer_class = PurchaseOrderSerializer
+    permission_classes = [IsPharmacyAdmin]
+    search_fields = ["order_no", "manufacturer__name", "item_summary", "purchaser_name"]
+    ordering_fields = ["id", "planned_date", "total_amount", "updated_at"]
+
+    def get_queryset(self):
+        queryset = PurchaseOrder.objects.select_related("store", "manufacturer").all().order_by("-id")
+        user = self.request.user
+        if user.store_id:
+            queryset = queryset.filter(store_id=user.store_id)
+        else:
+            queryset = queryset.none()
+        status_value = self.request.query_params.get("status")
+        if status_value:
+            queryset = queryset.filter(status=status_value)
+        return queryset
+
+    def _validate_store_scope(self, store_id):
+        user = self.request.user
+        if not user.store_id or user.store_id != store_id:
+            raise PermissionDenied("只能管理所属门店的采购订单。")
+
+    def perform_create(self, serializer):
+        store = serializer.validated_data["store"]
+        self._validate_store_scope(store.id)
+        serializer.save()
+
+    def perform_update(self, serializer):
+        store = serializer.validated_data.get("store", serializer.instance.store)
+        self._validate_store_scope(store.id)
         serializer.save()

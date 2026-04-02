@@ -7,5 +7,7 @@ export const deleteMedicineApi = (id) => http.delete(`/medicines/${id}/`);
 
 export const getManufacturersApi = (params) => http.get("/medicines/manufacturers/", { params });
 export const createManufacturerApi = (payload) => http.post("/medicines/manufacturers/", payload);
+export const updateManufacturerApi = (id, payload) => http.put(`/medicines/manufacturers/${id}/`, payload);
+export const deleteManufacturerApi = (id) => http.delete(`/medicines/manufacturers/${id}/`);
 export const getCategoriesApi = (params) => http.get("/medicines/categories/", { params });
 export const createCategoryApi = (payload) => http.post("/medicines/categories/", payload);
