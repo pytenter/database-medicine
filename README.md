@@ -1,11 +1,14 @@
-﻿# 连锁药店管理系统
+# 连锁药店管理系统
 
 基于 `Vue 3`、`Django REST Framework` 和 `openGauss` 的前后端分离项目，用于连锁药店的账号管理、药品管理、库存管理、销售管理、公告管理和数据看板展示。
 
-这份 README 面向团队协作，重点说明两件事：
+这份 README 以“队友如何稳定复现项目”为目标编写，覆盖：
 
-1. 队友如何从零开始在本地把项目跑起来
-2. 队友如何按照统一方式复现数据库、后端和前端环境
+- 本地 Docker Compose 一键运行
+- 本地前后端分离开发
+- 云服务器部署
+- Docker Hub 拉镜像失败时的处理办法
+- 容器状态、日志和常见故障排查
 
 ## 1. 项目简介
 
@@ -64,17 +67,17 @@ stop_project.bat
 README.md
 ```
 
-## 4. 本地复现方案总览
+## 4. 推荐复现方式
 
-团队本地开发建议使用下面两种方式之一：
+项目推荐两种使用方式：
 
-### 方案 A：Docker Compose 一键运行
+### 方式 A：Docker Compose 一键运行
 
-适合以下场景：
+适合：
 
-- 队友第一次拉代码，想最快把项目完整跑起来
+- 第一次拉代码，想最快跑起来
 - 只需要体验功能，不急着改代码
-- 希望数据库初始化过程尽量自动化
+- 希望数据库初始化自动完成
 
 这套方式会同时启动：
 
@@ -82,22 +85,22 @@ README.md
 - `backend`：Django API
 - `frontend`：nginx 托管的前端页面
 
-### 方案 B：前后端分离开发
+### 方式 B：前后端分离开发
 
-适合以下场景：
+适合：
 
 - 需要频繁修改前端或后端代码
-- 需要使用 Vite 热更新
+- 需要 Vite 热更新
 - 需要单独调试 Django 接口
 
-这套方式通常只用 Docker 启动数据库，然后本地分别运行：
+这套方式通常只用 Docker 跑数据库，然后本地分别运行：
 
 - `python manage.py runserver`
 - `npm run dev`
 
-如果你是第一次接手这个项目，建议先走方案 A；确认项目能运行后，再切到方案 B 做开发。
+如果你是第一次接手项目，建议先走方式 A；确认项目能完整运行后，再切换到方式 B 做开发。
 
-## 5. 方案 A：Docker Compose 一键运行
+## 5. 方式 A：Docker Compose 一键运行
 
 ### 5.1 环境要求
 
@@ -105,9 +108,9 @@ README.md
 
 - `Git`
 - `Docker Desktop` 或其他可用 Docker 环境
-- 可用的网络环境，用于拉取 Docker 镜像
+- 可用网络环境，用于拉取或导入 Docker 镜像
 
-建议确认以下端口没有被占用：
+建议确认以下端口未被占用：
 
 - `5432`：openGauss
 - `8000`：后端
@@ -120,7 +123,7 @@ git clone <你的仓库地址>
 cd database
 ```
 
-如果你是直接收到压缩包，解压后进入项目根目录即可。
+如果你收到的是压缩包，解压后进入项目根目录即可。
 
 ### 5.3 配置根目录环境变量
 
@@ -130,7 +133,7 @@ cd database
 Copy-Item .env.example .env
 ```
 
-然后编辑根目录的 `.env`，至少确认这些值：
+然后编辑根目录 `.env`，至少确认这些值：
 
 ```env
 SECRET_KEY=replace-with-a-secure-secret-key
@@ -142,18 +145,23 @@ DB_USER=gaussdb
 DB_PASSWORD=你自己设置的数据库密码
 DB_PORT=5432
 INIT_DB_DEMO_DATA=True
+OPENGAUSS_IMAGE=enmotech/opengauss:5.0.1
+PYTHON_BASE_IMAGE=python:3.9-slim
+NODE_BASE_IMAGE=node:20-alpine
+NGINX_BASE_IMAGE=nginx:1.27-alpine
 ```
 
-注意：
+说明：
 
-- `DB_PASSWORD` 可以自定义，但后续相关配置必须保持一致
+- `DB_PASSWORD` 可自定义，但后续相关配置必须一致
 - `INIT_DB_DEMO_DATA=True` 表示首次初始化时自动导入演示数据
+- 四个 `*_IMAGE` 变量用于在 Docker Hub 不可达时切换镜像来源
 - `.env` 不要提交到 Git
 
 ### 5.4 启动全部服务
 
 ```powershell
-docker compose up --build
+docker compose up -d --build
 ```
 
 首次启动会做这些事情：
@@ -161,38 +169,112 @@ docker compose up --build
 1. 拉取 openGauss、Python、Node、nginx 相关镜像
 2. 构建前后端镜像
 3. 启动数据库容器
-4. 后端自动等待数据库可用
+4. 后端自动等待数据库可连接
 5. 后端自动创建 `pharmacy_system` 数据库
-6. 如果数据库为空，自动执行：
+6. 若数据库为空，自动执行：
    - `sql/schema.sql`
    - `sql/init_data.sql`
 7. 启动前端容器
 
-### 5.5 访问项目
+### 5.5 查看运行状态
+
+```powershell
+docker compose ps
+```
+
+如果三项服务都为 `Up`，说明容器已经正常运行。
+
+查看日志：
+
+```powershell
+docker logs pharmacy-opengauss --tail 100
+docker logs pharmacy-backend --tail 100
+docker logs pharmacy-frontend --tail 100
+```
+
+### 5.6 访问项目
 
 启动完成后访问：
 
 - 前端：`http://127.0.0.1:8080`
-- 后端 API 根路径：`http://127.0.0.1:8000`
-- 主要接口前缀：`http://127.0.0.1:8000/api`
+- 后端：`http://127.0.0.1:8000`
+- API 前缀：`http://127.0.0.1:8000/api`
 
-### 5.6 停止服务
+### 5.7 停止服务
 
 ```powershell
 docker compose down
 ```
 
-如果你想连数据库数据一起清空，重新做一次全新初始化：
+如果你想连数据库卷一起删除，重新做一次全新初始化：
 
 ```powershell
 docker compose down -v
 ```
 
-## 6. 方案 B：前后端分离开发
+## 6. Docker Hub 拉镜像失败时怎么办
+
+这是这次复现里最常见的障碍。
+
+典型现象：
+
+```text
+Get "https://registry-1.docker.io/v2/": timeout
+```
+
+### 6.1 先测试镜像源连通性
+
+在终端执行：
+
+```powershell
+curl.exe -I --max-time 15 https://docker.m.daocloud.io/v2/
+curl.exe -I --max-time 15 https://docker.1ms.run/v2/
+```
+
+如果返回 `401`、`302`、`404` 之类 HTTP 响应，说明镜像源可达。
+
+### 6.2 临时手动拉取并改回原标签
+
+这是最稳妥的无配置文件方案。以服务器 Linux 为例：
+
+```bash
+docker pull docker.1ms.run/enmotech/opengauss:5.0.1
+docker tag docker.1ms.run/enmotech/opengauss:5.0.1 enmotech/opengauss:5.0.1
+
+docker pull docker.1ms.run/library/python:3.9-slim
+docker tag docker.1ms.run/library/python:3.9-slim python:3.9-slim
+
+docker pull docker.1ms.run/library/node:20-alpine
+docker tag docker.1ms.run/library/node:20-alpine node:20-alpine
+
+docker pull docker.1ms.run/library/nginx:1.27-alpine
+docker tag docker.1ms.run/library/nginx:1.27-alpine nginx:1.27-alpine
+```
+
+拉取完成后再执行：
+
+```bash
+docker compose up -d --build --pull never
+```
+
+### 6.3 使用 `.env` 覆盖基础镜像
+
+如果你已经有稳定可用的镜像前缀，也可以在 `.env` 中直接改成替代镜像，例如：
+
+```env
+OPENGAUSS_IMAGE=docker.1ms.run/enmotech/opengauss:5.0.1
+PYTHON_BASE_IMAGE=docker.1ms.run/library/python:3.9-slim
+NODE_BASE_IMAGE=docker.1ms.run/library/node:20-alpine
+NGINX_BASE_IMAGE=docker.1ms.run/library/nginx:1.27-alpine
+```
+
+这样重新执行 `docker compose up -d --build` 时，会直接从替代镜像源构建。
+
+## 7. 方式 B：前后端分离开发
 
 这套方式更适合日常开发。
 
-### 6.1 环境要求
+### 7.1 环境要求
 
 请先安装：
 
@@ -201,7 +283,7 @@ docker compose down -v
 - `npm`
 - `Docker`
 
-### 6.2 第一步：先启动数据库
+### 7.2 第一步：先启动数据库
 
 建议直接复用仓库里的 Compose，只启动数据库服务：
 
@@ -221,11 +303,11 @@ docker compose up -d db
 
 - Host：`127.0.0.1`
 - Port：`5432`
-- Database：`pharmacy_system`（后续可自动创建）
+- Database：`pharmacy_system`
 - User：`gaussdb`
-- Password：你在根目录 `.env` 中设置的 `DB_PASSWORD`
+- Password：根目录 `.env` 中的 `DB_PASSWORD`
 
-### 6.3 第二步：配置后端环境变量
+### 7.3 第二步：配置后端环境变量
 
 进入后端目录，复制示例配置：
 
@@ -253,34 +335,25 @@ INIT_DB_DEMO_DATA=True
 
 - `backend/.env` 里的 `DB_PASSWORD` 必须和根目录 `.env` 一致，否则后端连不上数据库
 
-### 6.4 第三步：安装后端依赖
+### 7.4 第三步：安装后端依赖
 
 ```powershell
 cd backend
 python -m pip install -r requirements.txt
 ```
 
-### 6.5 第四步：初始化数据库
-
-执行：
+### 7.5 第四步：初始化数据库
 
 ```powershell
 python scripts\init_compose_db.py
 ```
 
-这个脚本会自动完成以下工作：
+说明：
 
-- 等待 openGauss 可连接
-- 如果 `pharmacy_system` 不存在，则自动创建
-- 如果数据库为空，则执行 `sql/schema.sql`
-- 如果 `INIT_DB_DEMO_DATA=True`，再执行 `sql/init_data.sql`
-
-注意：
-
-- 这个项目以 `sql/schema.sql` 和 `sql/init_data.sql` 为准
+- 项目以 `sql/schema.sql` 和 `sql/init_data.sql` 为准
 - 不要把 `python manage.py migrate` 当作主初始化方式
 
-### 6.6 第五步：启动后端
+### 7.6 第五步：启动后端
 
 ```powershell
 python manage.py check
@@ -292,21 +365,19 @@ python manage.py runserver
 - `http://127.0.0.1:8000`
 - API 前缀：`http://127.0.0.1:8000/api`
 
-### 6.7 第六步：配置前端环境变量
-
-另开一个终端，回到项目根目录后执行：
+### 7.7 第六步：配置前端环境变量
 
 ```powershell
 Copy-Item frontend\.env.example frontend\.env
 ```
 
-`frontend/.env` 默认内容如下，通常不需要修改：
+默认情况下 `frontend/.env` 内容如下，通常不需要修改：
 
 ```env
 VITE_API_BASE_URL=/api
 ```
 
-### 6.8 第七步：安装并启动前端
+### 7.8 第七步：安装并启动前端
 
 ```powershell
 cd frontend
@@ -320,7 +391,7 @@ npm.cmd run dev
 
 本地开发时，Vite 会自动把 `/api` 代理到 `http://127.0.0.1:8000`。
 
-## 7. Windows 一键启动方式
+## 8. Windows 一键启动方式
 
 项目根目录提供了两个脚本：
 
@@ -329,10 +400,10 @@ npm.cmd run dev
 
 适用前提：
 
-- 你已经安装好 Python 和 Node.js
-- 你已经准备好 `backend/.env`
-- 本地 openGauss 已经在 `127.0.0.1:5432` 运行
-- 后端依赖和前端依赖已经安装完成
+- 已安装 Python 和 Node.js
+- 已准备好 `backend/.env`
+- 本地 openGauss 已在 `127.0.0.1:5432` 运行
+- 后端和前端依赖已安装完成
 
 启动：
 
@@ -346,13 +417,99 @@ npm.cmd run dev
 .\stop_project.bat
 ```
 
-如果双击脚本后启动失败，优先检查：
+## 9. 云服务器部署记录版步骤
 
-- 数据库是否已启动
-- `python` 或 Miniconda 路径是否可用
-- `npm.cmd` 是否已加入环境变量
+这是这次实际验证成功的方案，适合阿里云 Ubuntu + 宝塔 + Docker。
 
-## 8. 演示账号
+### 9.1 服务器准备
+
+建议至少具备：
+
+- Ubuntu 22.04 或兼容 Linux
+- 已安装 Docker 和 Docker Compose
+- 已放行安全组端口：`22`、`8888`、`8080`、`8000`
+
+说明：
+
+- `8888` 用于宝塔面板
+- `8080` 用于当前前端临时访问
+- `8000` 用于后端接口临时访问
+- `5432` 不建议长期对公网开放
+
+### 9.2 拉取项目
+
+```bash
+mkdir -p /www/wwwroot
+cd /www/wwwroot
+git clone <你的仓库地址> pharmacy-system
+cd pharmacy-system
+```
+
+### 9.3 配置环境变量
+
+```bash
+cp .env.example .env
+```
+
+示例：
+
+```env
+SECRET_KEY=你自己的随机字符串
+DEBUG=False
+ALLOWED_HOSTS=你的公网IP,127.0.0.1,localhost,backend
+CORS_ALLOWED_ORIGINS=http://你的公网IP:8080,http://127.0.0.1:8080,http://localhost:8080
+DB_NAME=pharmacy_system
+DB_USER=gaussdb
+DB_PASSWORD=你自己的数据库密码
+DB_PORT=5432
+INIT_DB_DEMO_DATA=True
+```
+
+### 9.4 若 Docker Hub 不可达，先手动导入镜像
+
+```bash
+docker pull docker.1ms.run/enmotech/opengauss:5.0.1
+docker tag docker.1ms.run/enmotech/opengauss:5.0.1 enmotech/opengauss:5.0.1
+
+docker pull docker.1ms.run/library/python:3.9-slim
+docker tag docker.1ms.run/library/python:3.9-slim python:3.9-slim
+
+docker pull docker.1ms.run/library/node:20-alpine
+docker tag docker.1ms.run/library/node:20-alpine node:20-alpine
+
+docker pull docker.1ms.run/library/nginx:1.27-alpine
+docker tag docker.1ms.run/library/nginx:1.27-alpine nginx:1.27-alpine
+```
+
+### 9.5 启动服务
+
+```bash
+docker compose up -d --build --pull never
+```
+
+### 9.6 查看状态
+
+```bash
+docker compose ps
+docker logs pharmacy-opengauss --tail 100
+docker logs pharmacy-backend --tail 100
+docker logs pharmacy-frontend --tail 100
+```
+
+### 9.7 访问地址
+
+- 前端：`http://你的公网IP:8080`
+- 后端：`http://你的公网IP:8000`
+
+当前这套方式是“先跑起来”的直连方式；后续更规范的做法是：
+
+- 使用宝塔反向代理
+- 只开放 `80/443`
+- 关闭公网 `8000`
+- 关闭公网 `5432`
+- 绑定域名并配置 HTTPS
+
+## 10. 演示账号
 
 可直接使用以下账号登录：
 
@@ -360,27 +517,25 @@ npm.cmd run dev
 - `storeadmin / Admin@123`
 - `sales01 / Admin@123`
 
-前提是数据库已经成功导入演示数据。
+前提是数据库已成功导入演示数据。
 
-## 9. 本地验证步骤
+## 11. 本地验证步骤
 
-队友在本地复现后，建议至少完成以下检查：
-
-### 9.1 页面访问检查
+建议至少完成以下检查：
 
 - 能打开前端登录页
 - 能正常登录系统管理员账号
 - 登录后能进入首页看板
 - 药品、库存、销售等页面能正常加载数据
 
-### 9.2 后端自检
+后端自检：
 
 ```powershell
 cd backend
 python manage.py check
 ```
 
-### 9.3 烟雾测试
+烟雾测试：
 
 ```powershell
 cd backend
@@ -397,7 +552,7 @@ python scripts\smoke_check.py
 - 销售创建后库存是否正确扣减
 - 测试结束后是否成功清理测试订单
 
-## 10. 团队协作约定
+## 12. 团队协作约定
 
 为了保证每个人复现结果一致，建议统一遵守这些规则：
 
@@ -409,47 +564,44 @@ python scripts\smoke_check.py
 6. `.env`、`backend/.env`、`frontend/.env` 不要提交到仓库
 7. 前端统一通过 `/api` 访问后端，避免每个人本地都写死不同地址
 
-## 11. 常见问题
+## 13. 常见问题
 
-### 11.1 `docker compose up` 失败
+### 13.1 `docker compose up` 失败
 
 常见原因：
 
 - Docker 没启动
-- 网络无法拉取镜像
+- Docker Hub 拉镜像失败
 - 5432、8000、8080 端口已被占用
 
-可以先检查：
+先检查：
 
 ```powershell
 docker compose ps
 ```
 
-### 11.2 后端提示数据库连不上
+### 13.2 数据库容器启动失败
 
-优先检查：
+这次复现里最常见的点有：
 
-- openGauss 是否已经启动
-- `backend/.env` 的 `DB_HOST` 是否为 `127.0.0.1`
-- `backend/.env` 的 `DB_PASSWORD` 是否和根目录 `.env` 一致
-- 本机 5432 端口是否被其他数据库程序占用
-
-### 11.3 提示数据库是“半初始化状态”
-
-说明数据库里已经有部分表，但不是完整初始化状态。
-
-处理方式：
-
-- 开发环境直接清空数据库后重新初始化
-- 如果是 Docker 卷中的旧数据，可执行：
+- openGauss 镜像需要 `privileged: true`
+- 旧版 `healthcheck` 会把数据库误判为 unhealthy
+- 如果卷里已有半初始化数据，需先：
 
 ```powershell
 docker compose down -v
 ```
 
-然后重新启动。
+再重新启动。
 
-### 11.4 登录成功但页面没有数据
+### 13.3 Docker Hub 不可达
+
+可采用两种方式：
+
+- 先从可达镜像源 `pull + tag` 回原始镜像名
+- 在 `.env` 中直接覆盖 `OPENGAUSS_IMAGE`、`PYTHON_BASE_IMAGE`、`NODE_BASE_IMAGE`、`NGINX_BASE_IMAGE`
+
+### 13.4 登录成功但页面没有数据
 
 优先检查：
 
@@ -457,7 +609,7 @@ docker compose down -v
 - `INIT_DB_DEMO_DATA` 是否为 `True`
 - 前端请求是否正确代理到后端 `/api`
 
-## 12. 提交前检查清单
+## 14. 提交前检查清单
 
 每位队友在提交代码前，建议至少确认：
 
@@ -465,19 +617,20 @@ docker compose down -v
 - 后端能正常启动
 - 数据库能正常连接
 - 三个角色都能登录
-- 自己修改涉及的数据结构已经同步到 SQL 文件
+- 自己修改涉及的数据结构已同步到 SQL 文件
 - 没有把 `.env` 或数据库密码提交到仓库
 
-## 13. 推荐给新队友的最短复现路径
+## 15. 推荐给新队友的最短复现路径
 
 如果只是想最快复现项目，请直接按下面做：
 
 1. 拉取仓库
 2. 在根目录执行 `Copy-Item .env.example .env`
 3. 把 `.env` 里的 `DB_PASSWORD` 改成你自己设置的值
-4. 执行 `docker compose up --build`
-5. 打开 `http://127.0.0.1:8080`
-6. 使用 `sysadmin / Admin@123` 登录
+4. 如果 Docker Hub 不通，先手动 `pull + tag` 必要镜像
+5. 执行 `docker compose up -d --build`
+6. 打开 `http://127.0.0.1:8080`
+7. 使用 `sysadmin / Admin@123` 登录
 
 如果只是想本地开发，请按下面做：
 

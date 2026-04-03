@@ -1,8 +1,10 @@
 services:
   db:
-    image: enmotech/opengauss:5.0.1
+    image: ${OPENGAUSS_IMAGE:-enmotech/opengauss:5.0.1}
     container_name: pharmacy-opengauss
     restart: unless-stopped
+    privileged: true
+    user: root
     environment:
       GS_PASSWORD: ${DB_PASSWORD:-replace-with-a-secure-db-password}
       PGDATA: /var/lib/opengauss/data
@@ -11,21 +13,17 @@ services:
       - "${DB_PORT:-5432}:5432"
     volumes:
       - opengauss_data:/var/lib/opengauss/data
-    healthcheck:
-      test: ["CMD-SHELL", "/usr/local/opengauss/bin/gsql -U gaussdb -d postgres -c 'select 1' >/dev/null 2>&1"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
 
   backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
+      args:
+        PYTHON_BASE_IMAGE: ${PYTHON_BASE_IMAGE:-python:3.9-slim}
     container_name: pharmacy-backend
     restart: unless-stopped
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     environment:
       SECRET_KEY: ${SECRET_KEY:-replace-with-a-secure-secret-key}
       DEBUG: ${DEBUG:-False}
@@ -46,6 +44,8 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
       args:
+        NODE_BASE_IMAGE: ${NODE_BASE_IMAGE:-node:20-alpine}
+        NGINX_BASE_IMAGE: ${NGINX_BASE_IMAGE:-nginx:1.27-alpine}
         VITE_API_BASE_URL: /api
     container_name: pharmacy-frontend
     restart: unless-stopped
@@ -56,4 +56,3 @@ services:
 
 volumes:
   opengauss_data:
-
