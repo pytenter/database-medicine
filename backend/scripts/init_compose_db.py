@@ -27,7 +27,7 @@ INIT_DATA_SQL = BASE_DIR / "sql" / "init_data.sql"
 
 DB_NAME = os.getenv("DB_NAME", "pharmacy_system")
 DB_USER = os.getenv("DB_USER", "gaussdb")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "Gauss@123")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "replace-with-a-secure-db-password")
 DB_HOST = os.getenv("DB_HOST", "db")
 DB_PORT = int(os.getenv("DB_PORT", "5432"))
 DB_ADMIN_DB = os.getenv("DB_ADMIN_DB", "postgres")
@@ -126,3 +126,4 @@ if __name__ == "__main__":
     wait_for_database()
     ensure_database_exists()
     initialize_database_if_needed()
+

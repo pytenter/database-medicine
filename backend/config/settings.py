@@ -72,7 +72,7 @@ DATABASES = {
         "ENGINE": "opengauss_backend",
         "NAME": os.getenv("DB_NAME", "pharmacy_system"),
         "USER": os.getenv("DB_USER", "gaussdb"),
-        "PASSWORD": os.getenv("DB_PASSWORD", "Gauss@123"),
+        "PASSWORD": os.getenv("DB_PASSWORD", "replace-with-a-secure-db-password"),
         "HOST": os.getenv("DB_HOST", "127.0.0.1"),
         "PORT": os.getenv("DB_PORT", "5432"),
     }
@@ -105,3 +105,4 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
