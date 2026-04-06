@@ -2,8 +2,8 @@
   <div class="page-card page-box">
     <div class="toolbar">
       <div>
-        <h3 class="page-title">销售人员班次排班</h3>
-        <p class="page-subtitle">为当前门店销售人员安排早班、中班和晚班。</p>
+        <h3 class="page-title">销售人员排班</h3>
+        <p class="page-subtitle">为当前门店销售人员安排班次，列表按星期几展示，方便快速查看轮班情况。</p>
       </div>
       <div class="toolbar-actions toolbar-wrap">
         <el-select v-model="salespersonFilter" clearable placeholder="选择销售人员" style="width: 180px;">
@@ -18,7 +18,7 @@
 
     <el-table :data="schedules" border>
       <el-table-column prop="salesperson_name" label="销售人员" min-width="120" />
-      <el-table-column prop="shift_date" label="排班日期" width="120" />
+      <el-table-column prop="shift_weekday" label="星期" width="100" />
       <el-table-column prop="shift_period_display" label="班次" width="100" />
       <el-table-column label="时间段" min-width="150">
         <template #default="scope">{{ scope.row.start_time }} - {{ scope.row.end_time }}</template>
@@ -77,6 +77,7 @@ const salespersonFilter = ref("");
 const dateFilter = ref("");
 const dialogVisible = ref(false);
 const editingId = ref(null);
+const weekdayLabels = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
 const shiftOptions = [
   { value: "morning", label: "早班" },
   { value: "afternoon", label: "中班" },
@@ -91,6 +92,13 @@ const form = reactive({
   end_time: "12:00:00",
   note: "",
 });
+
+const getShiftWeekday = (dateText) => {
+  if (!dateText) return "-";
+  const date = new Date(`${dateText}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return dateText;
+  return weekdayLabels[date.getDay()];
+};
 
 const resetForm = () => {
   editingId.value = null;
@@ -110,7 +118,10 @@ const loadSchedules = async () => {
   if (salespersonFilter.value) params.salesperson = salespersonFilter.value;
   if (dateFilter.value) params.shift_date = dateFilter.value;
   const { data } = await getShiftSchedulesApi(params);
-  schedules.value = data;
+  schedules.value = data.map((item) => ({
+    ...item,
+    shift_weekday: getShiftWeekday(item.shift_date),
+  }));
 };
 
 const loadSalespeople = async () => {
@@ -160,10 +171,11 @@ const submitForm = async () => {
 
 const removeSchedule = async (row) => {
   try {
-      await ElMessageBox.confirm(`确认删除 ${row.salesperson_name} 在 ${row.shift_date} 的排班吗？`, "提示", { type: "warning" });
-      await deleteShiftScheduleApi(row.id);
-      ElMessage.success("排班已删除。");
-      loadSchedules();
+    const weekdayText = row.shift_weekday || getShiftWeekday(row.shift_date);
+    await ElMessageBox.confirm(`确认删除 ${row.salesperson_name} 在${weekdayText}的排班吗？`, "提示", { type: "warning" });
+    await deleteShiftScheduleApi(row.id);
+    ElMessage.success("排班已删除。");
+    loadSchedules();
   } catch (error) {
     if (error === "cancel") return;
     ElMessage.error(error.response?.data?.detail || "删除排班失败。");
