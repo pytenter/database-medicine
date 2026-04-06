@@ -11,6 +11,10 @@ class RoleChoices(models.TextChoices):
 
 
 class User(AbstractUser, TimeStampedModel):
+    # This project does not use Django's built-in group/permission tables.
+    groups = None
+    user_permissions = None
+
     full_name = models.CharField(max_length=100, verbose_name="Full Name")
     role = models.CharField(max_length=30, choices=RoleChoices.choices, verbose_name="Role")
     phone = models.CharField(max_length=20, blank=True, verbose_name="Phone")

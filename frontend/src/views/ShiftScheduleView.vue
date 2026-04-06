@@ -159,10 +159,15 @@ const submitForm = async () => {
 };
 
 const removeSchedule = async (row) => {
-  await ElMessageBox.confirm(`确认删除 ${row.salesperson_name} 在 ${row.shift_date} 的排班吗？`, "提示", { type: "warning" });
-  await deleteShiftScheduleApi(row.id);
-  ElMessage.success("排班已删除。");
-  loadSchedules();
+  try {
+      await ElMessageBox.confirm(`确认删除 ${row.salesperson_name} 在 ${row.shift_date} 的排班吗？`, "提示", { type: "warning" });
+      await deleteShiftScheduleApi(row.id);
+      ElMessage.success("排班已删除。");
+      loadSchedules();
+  } catch (error) {
+    if (error === "cancel") return;
+    ElMessage.error(error.response?.data?.detail || "删除排班失败。");
+  }
 };
 
 onMounted(() => {

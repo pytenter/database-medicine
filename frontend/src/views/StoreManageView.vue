@@ -421,10 +421,15 @@ const submitForm = async () => {
 };
 
 const removeStore = async (row) => {
-  await ElMessageBox.confirm(`确认删除门店 ${row.name} 吗？`, "提示", { type: "warning" });
-  await deleteStoreApi(row.id);
-  ElMessage.success("门店删除成功。");
-  await loadStores();
+  try {
+      await ElMessageBox.confirm(`确认删除门店 ${row.name} 吗？`, "提示", { type: "warning" });
+      await deleteStoreApi(row.id);
+      ElMessage.success("门店删除成功。");
+      await loadStores();
+  } catch (error) {
+    if (error === "cancel") return;
+    ElMessage.error(error.response?.data?.detail || "删除门店失败。");
+  }
 };
 
 onMounted(() => {

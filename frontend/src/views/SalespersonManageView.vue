@@ -126,10 +126,15 @@ const submitForm = async () => {
 };
 
 const deleteUser = async (row) => {
-  await ElMessageBox.confirm(`确认删除用户 ${row.username} 吗？`, "提示", { type: "warning" });
-  await deleteUserApi(row.id);
-  ElMessage.success("删除用户成功");
-  loadUsers();
+  try {
+    await ElMessageBox.confirm(`确认删除用户 ${row.username} 吗？`, "提示", { type: "warning" });
+    await deleteUserApi(row.id);
+    ElMessage.success("删除用户成功");
+    loadUsers();
+  } catch (error) {
+    if (error === "cancel") return;
+    ElMessage.error(error.response?.data?.detail || "删除用户失败");
+  }
 };
 
 const resetPassword = async (row) => {

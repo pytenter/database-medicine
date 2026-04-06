@@ -104,10 +104,15 @@ const submitForm = async () => {
 };
 
 const removeManufacturer = async (row) => {
-  await ElMessageBox.confirm(`确认删除厂商 ${row.name} 吗？`, "提示", { type: "warning" });
-  await deleteManufacturerApi(row.id);
-  ElMessage.success("厂商已删除。");
-  loadManufacturers();
+  try {
+      await ElMessageBox.confirm(`确认删除厂商 ${row.name} 吗？`, "提示", { type: "warning" });
+      await deleteManufacturerApi(row.id);
+      ElMessage.success("厂商已删除。");
+      loadManufacturers();
+  } catch (error) {
+    if (error === "cancel") return;
+    ElMessage.error(error.response?.data?.detail || "删除厂商失败。");
+  }
 };
 
 onMounted(loadManufacturers);

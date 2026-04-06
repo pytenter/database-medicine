@@ -104,10 +104,15 @@ const submitForm = async () => {
 };
 
 const deleteAnnouncement = async (row) => {
-  await ElMessageBox.confirm(`确认删除公告“${row.title}”吗？`, "提示", { type: "warning" });
-  await deleteAnnouncementApi(row.id);
-  ElMessage.success("删除公告成功");
-  loadAnnouncements();
+  try {
+      await ElMessageBox.confirm(`确认删除公告“${row.title}”吗？`, "提示", { type: "warning" });
+      await deleteAnnouncementApi(row.id);
+      ElMessage.success("删除公告成功");
+      loadAnnouncements();
+  } catch (error) {
+    if (error === "cancel") return;
+    ElMessage.error(error.response?.data?.detail || "删除公告失败");
+  }
 };
 
 onMounted(loadAnnouncements);

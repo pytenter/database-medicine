@@ -1,3 +1,4 @@
+from django.db.models.deletion import ProtectedError
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -45,6 +46,19 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.action in {"create", "update", "partial_update"}:
             return UserCreateUpdateSerializer
         return UserSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        user = self.get_object()
+        if user.id == request.user.id:
+            raise PermissionDenied("不能删除当前登录中的系统管理员账号。")
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except ProtectedError:
+            return Response(
+                {"detail": "该员工已关联业务数据，暂时不能直接删除。请先停用账号，或先清理其关联记录。"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
 
     @action(methods=["post"], detail=True)
     def reset_password(self, request, pk=None):

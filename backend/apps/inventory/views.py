@@ -1,5 +1,7 @@
-from rest_framework import permissions, viewsets
+from django.db.models.deletion import ProtectedError
+from rest_framework import permissions, status, viewsets
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
 
 from apps.accounts.permissions import IsPharmacyAdmin, IsSystemAdmin
 from apps.inventory.models import Inventory, PurchaseOrder, Store
@@ -13,6 +15,15 @@ class StoreViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Store.objects.all().order_by("id")
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except ProtectedError:
+            return Response(
+                {"detail": "该门店已关联用户、库存、采购单或销售记录，无法直接删除。"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class InventoryPermission(permissions.BasePermission):
@@ -56,6 +67,15 @@ class PurchaseOrderViewSet(viewsets.ModelViewSet):
     permission_classes = [IsPharmacyAdmin]
     search_fields = ["order_no", "manufacturer__name", "item_summary", "purchaser_name"]
     ordering_fields = ["id", "planned_date", "total_amount", "updated_at"]
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except ProtectedError:
+            return Response(
+                {"detail": "该采购单已关联其他业务数据，无法直接删除。"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     def get_queryset(self):
         queryset = PurchaseOrder.objects.select_related("store", "manufacturer").all().order_by("-id")

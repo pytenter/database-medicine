@@ -112,10 +112,15 @@ const submitForm = async () => {
 };
 
 const removeRow = async (row) => {
-  await ElMessageBox.confirm(`确认删除 ${row.medicine_name} 的库存记录吗？`, "提示", { type: "warning" });
-  await deleteInventoryApi(row.id);
-  ElMessage.success("库存记录删除成功。");
-  loadInventory();
+  try {
+      await ElMessageBox.confirm(`确认删除 ${row.medicine_name} 的库存记录吗？`, "提示", { type: "warning" });
+      await deleteInventoryApi(row.id);
+      ElMessage.success("库存记录删除成功。");
+      loadInventory();
+  } catch (error) {
+    if (error === "cancel") return;
+    ElMessage.error(error.response?.data?.detail || "删除库存记录失败。");
+  }
 };
 
 onMounted(() => {

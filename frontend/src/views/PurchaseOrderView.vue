@@ -185,10 +185,15 @@ const submitForm = async () => {
 };
 
 const removeOrder = async (row) => {
-  await ElMessageBox.confirm(`确认删除采购单 ${row.order_no} 吗？`, "提示", { type: "warning" });
-  await deletePurchaseOrderApi(row.id);
-  ElMessage.success("采购单已删除。");
-  loadOrders();
+  try {
+      await ElMessageBox.confirm(`确认删除采购单 ${row.order_no} 吗？`, "提示", { type: "warning" });
+      await deletePurchaseOrderApi(row.id);
+      ElMessage.success("采购单已删除。");
+      loadOrders();
+  } catch (error) {
+    if (error === "cancel") return;
+    ElMessage.error(error.response?.data?.detail || "删除采购单失败。");
+  }
 };
 
 onMounted(() => {

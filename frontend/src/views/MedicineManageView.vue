@@ -187,10 +187,15 @@ const submitForm = async () => {
 };
 
 const removeMedicine = async (row) => {
-  await ElMessageBox.confirm(`确认删除药品 ${row.name} 吗？`, "提示", { type: "warning" });
-  await deleteMedicineApi(row.id);
-  ElMessage.success("药品删除成功。")
-  loadMedicines();
+  try {
+      await ElMessageBox.confirm(`确认删除药品 ${row.name} 吗？`, "提示", { type: "warning" });
+      await deleteMedicineApi(row.id);
+      ElMessage.success("药品删除成功。")
+      loadMedicines();
+  } catch (error) {
+    if (error === "cancel") return;
+    ElMessage.error(error.response?.data?.detail || "删除药品失败。");
+  }
 };
 
 const submitManufacturer = async () => {
