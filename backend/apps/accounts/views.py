@@ -1,4 +1,3 @@
-from django.db.models.deletion import ProtectedError
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -40,6 +39,13 @@ class UserViewSet(viewsets.ModelViewSet):
         role_value = self.request.query_params.get("role")
         if role_value in {RoleChoices.PHARMACY_ADMIN, RoleChoices.SALESPERSON}:
             queryset = queryset.filter(role=role_value)
+        is_active_value = self.request.query_params.get("is_active")
+        if is_active_value is not None:
+            normalized = str(is_active_value).strip().lower()
+            if normalized in {"true", "1", "yes"}:
+                queryset = queryset.filter(is_active=True)
+            elif normalized in {"false", "0", "no"}:
+                queryset = queryset.filter(is_active=False)
         return queryset
 
     def get_serializer_class(self):
@@ -50,15 +56,14 @@ class UserViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         user = self.get_object()
         if user.id == request.user.id:
-            raise PermissionDenied("不能删除当前登录中的系统管理员账号。")
-        try:
-            return super().destroy(request, *args, **kwargs)
-        except ProtectedError:
-            return Response(
-                {"detail": "该员工已关联业务数据，暂时不能直接删除。请先停用账号，或先清理其关联记录。"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
+            raise PermissionDenied("\u4e0d\u80fd\u505c\u7528\u5f53\u524d\u767b\u5f55\u4e2d\u7684\u7cfb\u7edf\u7ba1\u7406\u5458\u8d26\u53f7\u3002")
+        if not user.is_active:
+            return Response({"detail": "\u8be5\u8d26\u53f7\u5df2\u5904\u4e8e\u505c\u7528\u72b6\u6001\u3002"}, status=status.HTTP_200_OK)
+        if user.role == RoleChoices.SYSTEM_ADMIN and User.objects.filter(role=RoleChoices.SYSTEM_ADMIN, is_active=True).exclude(id=user.id).count() == 0:
+            raise PermissionDenied("\u81f3\u5c11\u9700\u8981\u4fdd\u7559\u4e00\u4e2a\u542f\u7528\u4e2d\u7684\u7cfb\u7edf\u7ba1\u7406\u5458\u8d26\u53f7\u3002")
+        user.is_active = False
+        user.save(update_fields=["is_active", "updated_at"])
+        return Response({"detail": f"\u7528\u6237 {user.username} \u5df2\u505c\u7528\u3002"}, status=status.HTTP_200_OK)
 
     @action(methods=["post"], detail=True)
     def reset_password(self, request, pk=None):

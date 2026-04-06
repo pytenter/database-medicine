@@ -28,7 +28,7 @@
         <template #default="scope">
           <el-button link type="primary" @click="openDialog(scope.row)">编辑</el-button>
           <el-button link type="warning" @click="resetPassword(scope.row)">重置密码</el-button>
-          <el-button link type="danger" @click="deleteUser(scope.row)">删除</el-button>
+          <el-button link type="danger" :disabled="!scope.row.is_active" @click="deleteUser(scope.row)">{{ scope.row.is_active ? "停用" : "已停用" }}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -87,7 +87,7 @@ const resetForm = () => {
 };
 
 const loadUsers = async () => {
-  const params = { role: "pharmacy_admin" };
+  const params = { role: "pharmacy_admin", is_active: true };
   if (keyword.value) params.search = keyword.value;
   const { data } = await getUsersApi(params);
   users.value = data;
@@ -126,14 +126,18 @@ const submitForm = async () => {
 };
 
 const deleteUser = async (row) => {
+  if (!row.is_active) {
+    ElMessage.info("\u8be5\u8d26\u53f7\u5df2\u505c\u7528\u3002");
+    return;
+  }
   try {
-    await ElMessageBox.confirm(`确认删除用户 ${row.username} 吗？`, "提示", { type: "warning" });
+    await ElMessageBox.confirm(`\u786e\u8ba4\u505c\u7528\u7528\u6237 ${row.username} \u5417\uff1f\u505c\u7528\u540e\u8be5\u8d26\u53f7\u5c06\u65e0\u6cd5\u767b\u5f55\uff0c\u4f46\u5386\u53f2\u4e1a\u52a1\u8bb0\u5f55\u4f1a\u4fdd\u7559\u3002`, "\u63d0\u793a", { type: "warning" });
     await deleteUserApi(row.id);
-    ElMessage.success("删除用户成功");
-    loadUsers();
+    await loadUsers();
+    await ElMessageBox.alert("停用后，该账号已从当前药店管理员列表中隐藏，历史业务记录会继续保留。", "停用成功", { type: "success" });
   } catch (error) {
     if (error === "cancel") return;
-    ElMessage.error(error.response?.data?.detail || "删除用户失败");
+    ElMessage.error(error.response?.data?.detail || "\u505c\u7528\u7528\u6237\u5931\u8d25\u3002");
   }
 };
 
