@@ -98,17 +98,31 @@ const openDialog = (row = null) => {
   dialogVisible.value = true;
 };
 
+const getSubmitErrorMessage = (error, fallback) => {
+  const payload = error?.response?.data;
+  if (!payload) return fallback;
+  if (typeof payload.detail === "string") return payload.detail;
+  const firstValue = Object.values(payload)[0];
+  if (Array.isArray(firstValue) && firstValue.length) return String(firstValue[0]);
+  if (typeof firstValue === "string") return firstValue;
+  return fallback;
+};
+
 const submitForm = async () => {
   const payload = { ...form, store: currentUser?.store };
-  if (editingId.value) {
-    await updateInventoryApi(editingId.value, payload);
-    ElMessage.success("库存修改成功。");
-  } else {
-    await createInventoryApi(payload);
-    ElMessage.success("库存创建成功。");
+  try {
+    if (editingId.value) {
+      await updateInventoryApi(editingId.value, payload);
+      ElMessage.success("库存修改成功。");
+    } else {
+      await createInventoryApi(payload);
+      ElMessage.success("库存已保存；若该药品已存在于当前门店，则已自动累加数量。");
+    }
+    dialogVisible.value = false;
+    loadInventory();
+  } catch (error) {
+    ElMessage.error(getSubmitErrorMessage(error, "保存库存失败。"));
   }
-  dialogVisible.value = false;
-  loadInventory();
 };
 
 const removeRow = async (row) => {

@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 
 from apps.common.text import CleanDisplaySerializerMixin, is_placeholder_text
@@ -20,6 +21,7 @@ class InventorySerializer(CleanDisplaySerializerMixin, serializers.ModelSerializ
 
     class Meta:
         model = Inventory
+        validators = []
         fields = [
             "id",
             "store",
@@ -48,6 +50,26 @@ class InventorySerializer(CleanDisplaySerializerMixin, serializers.ModelSerializ
         if value < 0:
             raise serializers.ValidationError("预警阈值不能为负数。")
         return value
+
+    def create(self, validated_data):
+        store = validated_data["store"]
+        medicine = validated_data["medicine"]
+        quantity = validated_data.get("quantity", 0)
+        warning_threshold = validated_data.get("warning_threshold", 10)
+
+        with transaction.atomic():
+            inventory = (
+                Inventory.objects.select_for_update()
+                .filter(store=store, medicine=medicine)
+                .first()
+            )
+            if inventory:
+                inventory.quantity += quantity
+                inventory.warning_threshold = warning_threshold
+                inventory.save(update_fields=["quantity", "warning_threshold", "updated_at"])
+                return inventory
+
+            return super().create(validated_data)
 
 
 class PurchaseOrderSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
