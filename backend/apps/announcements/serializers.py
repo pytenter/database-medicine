@@ -1,9 +1,10 @@
 from rest_framework import serializers
 
 from apps.announcements.models import Announcement
+from apps.common.text import CleanDisplaySerializerMixin
 
 
-class AnnouncementSerializer(serializers.ModelSerializer):
+class AnnouncementSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
     created_by_name = serializers.CharField(source="created_by.full_name", read_only=True)
 
     class Meta:

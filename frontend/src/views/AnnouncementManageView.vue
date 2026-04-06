@@ -91,22 +91,22 @@ const submitForm = async () => {
   try {
     if (editingId.value) {
       await updateAnnouncementApi(editingId.value, form);
-      ElMessage.success("æ´æ°å¬åæå");
+      ElMessage.success("更新公告成功");
     } else {
       await createAnnouncementApi(form);
-      ElMessage.success("æ°å¢å¬åæå");
+      ElMessage.success("新增公告成功");
     }
     dialogVisible.value = false;
     loadAnnouncements();
   } catch (error) {
-    ElMessage.error(error.response?.data?.detail || "ä¿å­å¬åå¤±è´¥");
+    ElMessage.error(error.response?.data?.detail || "保存公告失败");
   }
 };
 
 const deleteAnnouncement = async (row) => {
-  await ElMessageBox.confirm(`ç¡®è®¤å é¤å¬åâ${row.title}âåï¼`, "æç¤º", { type: "warning" });
+  await ElMessageBox.confirm(`确认删除公告“${row.title}”吗？`, "提示", { type: "warning" });
   await deleteAnnouncementApi(row.id);
-  ElMessage.success("å é¤å¬åæå");
+  ElMessage.success("删除公告成功");
   loadAnnouncements();
 };
 

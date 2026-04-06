@@ -3,9 +3,10 @@ from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.accounts.models import RoleChoices, ShiftSchedule, User
+from apps.common.text import CleanDisplaySerializerMixin, is_placeholder_text
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
     store_name = serializers.CharField(source="store.name", read_only=True)
     role_display = serializers.CharField(source="get_role_display", read_only=True)
 
@@ -25,6 +26,12 @@ class UserSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.username == "tmp_sys_overreach" and is_placeholder_text(data.get("full_name")):
+            data["full_name"] = "临时系统管理员"
+        return data
 
 
 class UserCreateUpdateSerializer(serializers.ModelSerializer):
@@ -70,7 +77,7 @@ class UserCreateUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 
-class ShiftScheduleSerializer(serializers.ModelSerializer):
+class ShiftScheduleSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
     salesperson_name = serializers.CharField(source="salesperson.full_name", read_only=True)
     store_name = serializers.CharField(source="store.name", read_only=True)
     shift_period_display = serializers.CharField(source="get_shift_period_display", read_only=True)

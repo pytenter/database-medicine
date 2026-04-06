@@ -4,6 +4,7 @@ from uuid import uuid4
 from django.db import transaction
 from rest_framework import serializers
 
+from apps.common.text import CleanDisplaySerializerMixin, is_placeholder_text, repair_text
 from apps.inventory.models import Inventory
 from apps.sales.models import (
     OrderLogistics,
@@ -14,12 +15,34 @@ from apps.sales.models import (
 )
 
 
+_STANDARD_LOGISTICS_CONTENT = {
+    SaleOrderStatusChoices.ORDERED: "等待配送",
+    SaleOrderStatusChoices.DELIVERING: "配送员正在配送",
+    SaleOrderStatusChoices.COMPLETED: "订单已送达",
+}
+
+_LEGACY_LOGISTICS_CONTENT = {
+    "订单已创建，等待门店备货。": _STANDARD_LOGISTICS_CONTENT[SaleOrderStatusChoices.ORDERED],
+    "药店已完成拣货，配送员正在派送。": _STANDARD_LOGISTICS_CONTENT[SaleOrderStatusChoices.DELIVERING],
+    "订单已完成签收，客户已收货。": _STANDARD_LOGISTICS_CONTENT[SaleOrderStatusChoices.COMPLETED],
+    "正在配送": _STANDARD_LOGISTICS_CONTENT[SaleOrderStatusChoices.DELIVERING],
+}
+
+
+def normalize_logistics_content(content, status_after=""):
+    cleaned = repair_text(content or "")
+    cleaned = _LEGACY_LOGISTICS_CONTENT.get(cleaned, cleaned)
+    if is_placeholder_text(cleaned):
+        return _STANDARD_LOGISTICS_CONTENT.get(status_after, "物流状态已更新")
+    return cleaned
+
+
 class SaleOrderItemWriteSerializer(serializers.Serializer):
     medicine_id = serializers.IntegerField()
     quantity = serializers.IntegerField(min_value=1)
 
 
-class SaleOrderItemReadSerializer(serializers.ModelSerializer):
+class SaleOrderItemReadSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
     medicine_name = serializers.CharField(source="medicine.name", read_only=True)
     medicine_code = serializers.CharField(source="medicine.code", read_only=True)
     manufacturer_name = serializers.CharField(source="medicine.manufacturer.name", read_only=True)
@@ -38,7 +61,7 @@ class SaleOrderItemReadSerializer(serializers.ModelSerializer):
         ]
 
 
-class OrderLogisticsSerializer(serializers.ModelSerializer):
+class OrderLogisticsSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
     status_after_label = serializers.CharField(source="get_status_after_display", read_only=True)
 
     class Meta:
@@ -52,14 +75,19 @@ class OrderLogisticsSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["content"] = normalize_logistics_content(data.get("content"), data.get("status_after", ""))
+        return data
 
-class OrderReviewSerializer(serializers.ModelSerializer):
+
+class OrderReviewSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = OrderReview
         fields = ["id", "rating", "content", "reviewer_name", "created_at", "updated_at"]
 
 
-class SaleOrderSerializer(serializers.ModelSerializer):
+class SaleOrderSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
     items = SaleOrderItemReadSerializer(many=True, read_only=True)
     logistics = OrderLogisticsSerializer(many=True, read_only=True)
     review = OrderReviewSerializer(read_only=True)
@@ -108,9 +136,9 @@ class SaleCreateSerializer(serializers.Serializer):
     def validate(self, attrs):
         user = self.context["request"].user
         if not user.store_id:
-            raise serializers.ValidationError("??????????????")
+            raise serializers.ValidationError("当前账号未关联门店，无法创建销售单。")
         if not attrs["items"]:
-            raise serializers.ValidationError("????????????")
+            raise serializers.ValidationError("请至少选择一种药品。")
 
         insufficient_items = []
         for item in attrs["items"]:
@@ -119,10 +147,10 @@ class SaleCreateSerializer(serializers.Serializer):
                 medicine_id=item["medicine_id"],
             ).first()
             if not inventory:
-                insufficient_items.append(f"?? ID {item['medicine_id']} ??????????")
+                insufficient_items.append(f"药品 ID {item['medicine_id']} 在当前门店无库存记录。")
                 continue
             if inventory.quantity < item["quantity"]:
-                insufficient_items.append(f"{inventory.medicine.name} ????????? {inventory.quantity} ??")
+                insufficient_items.append(f"{inventory.medicine.name} 库存不足，当前仅剩 {inventory.quantity} 件。")
 
         if insufficient_items:
             raise serializers.ValidationError({"items": insufficient_items})
@@ -165,7 +193,7 @@ class SaleCreateSerializer(serializers.Serializer):
         order.save(update_fields=["total_amount", "updated_at"])
         OrderLogistics.objects.create(
             order=order,
-            content="ç­å¾éé",
+            content=_STANDARD_LOGISTICS_CONTENT[SaleOrderStatusChoices.ORDERED],
             operator_name=user.full_name or user.username,
             status_after=SaleOrderStatusChoices.ORDERED,
         )
@@ -185,23 +213,9 @@ class LogisticsUpdateSerializer(serializers.Serializer):
         order = self.context["order"]
         user = self.context["request"].user
         status_after = validated_data.get("status_after", "")
-        content = (validated_data.get("content") or "").strip()
-        standard_map = {
-            SaleOrderStatusChoices.ORDERED: "\u7b49\u5f85\u914d\u9001",
-            SaleOrderStatusChoices.DELIVERING: "\u914d\u9001\u5458\u6b63\u5728\u914d\u9001",
-            SaleOrderStatusChoices.COMPLETED: "\u8ba2\u5355\u5df2\u9001\u8fbe",
-        }
-        legacy_map = {
-            "\u8ba2\u5355\u5df2\u521b\u5efa\uff0c\u7b49\u5f85\u95e8\u5e97\u5907\u8d27\u3002": standard_map[SaleOrderStatusChoices.ORDERED],
-            "\u836f\u5e97\u5df2\u5b8c\u6210\u62e3\u8d27\uff0c\u914d\u9001\u5458\u6b63\u5728\u6d3e\u9001\u3002": standard_map[SaleOrderStatusChoices.DELIVERING],
-            "\u8ba2\u5355\u5df2\u5b8c\u6210\u7b7e\u6536\uff0c\u5ba2\u6237\u5df2\u6536\u8d27\u3002": standard_map[SaleOrderStatusChoices.COMPLETED],
-            "\u6b63\u5728\u914d\u9001": standard_map[SaleOrderStatusChoices.DELIVERING],
-            "????": standard_map[SaleOrderStatusChoices.ORDERED],
-            "???????": standard_map[SaleOrderStatusChoices.ORDERED],
-        }
-        content = legacy_map.get(content, content)
-        if status_after in standard_map and not content:
-            content = standard_map[status_after]
+        content = normalize_logistics_content(validated_data.get("content"), status_after)
+        if status_after in _STANDARD_LOGISTICS_CONTENT and not content:
+            content = _STANDARD_LOGISTICS_CONTENT[status_after]
 
         logistics = OrderLogistics.objects.create(
             order=order,

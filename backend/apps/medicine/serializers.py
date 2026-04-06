@@ -1,21 +1,22 @@
-﻿from rest_framework import serializers
+from rest_framework import serializers
 
+from apps.common.text import CleanDisplaySerializerMixin
 from apps.medicine.models import Manufacturer, Medicine, MedicineCategory
 
 
-class ManufacturerSerializer(serializers.ModelSerializer):
+class ManufacturerSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Manufacturer
         fields = "__all__"
 
 
-class MedicineCategorySerializer(serializers.ModelSerializer):
+class MedicineCategorySerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = MedicineCategory
         fields = "__all__"
 
 
-class MedicineSerializer(serializers.ModelSerializer):
+class MedicineSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
     manufacturer_name = serializers.CharField(source="manufacturer.name", read_only=True)
     category_name = serializers.CharField(source="category.name", read_only=True)
 

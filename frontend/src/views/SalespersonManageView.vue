@@ -113,28 +113,28 @@ const submitForm = async () => {
   try {
     if (editingId.value) {
       await updateUserApi(editingId.value, payload);
-      ElMessage.success("æ´æ°éå®äººåæå");
+      ElMessage.success("更新销售人员成功");
     } else {
       await createUserApi(payload);
-      ElMessage.success("æ°å¢éå®äººåæå");
+      ElMessage.success("新增销售人员成功");
     }
     dialogVisible.value = false;
     loadUsers();
   } catch (error) {
-    ElMessage.error(error.response?.data?.detail || "ä¿å­ç¨æ·å¤±è´¥");
+    ElMessage.error(error.response?.data?.detail || "保存用户失败");
   }
 };
 
 const deleteUser = async (row) => {
-  await ElMessageBox.confirm(`ç¡®è®¤å é¤ç¨æ· ${row.username} åï¼`, "æç¤º", { type: "warning" });
+  await ElMessageBox.confirm(`确认删除用户 ${row.username} 吗？`, "提示", { type: "warning" });
   await deleteUserApi(row.id);
-  ElMessage.success("å é¤ç¨æ·æå");
+  ElMessage.success("删除用户成功");
   loadUsers();
 };
 
 const resetPassword = async (row) => {
   await resetPasswordApi(row.id);
-  ElMessage.success(`å·²å° ${row.username} çå¯ç éç½®ä¸º Admin@123ã`);
+  ElMessage.success(`已将 ${row.username} 的密码重置为 Admin@123。`);
 };
 
 onMounted(() => {

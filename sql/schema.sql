@@ -243,7 +243,7 @@ SELECT
     mf.name AS manufacturer_name,
     i.quantity,
     i.warning_threshold,
-    CASE WHEN i.quantity <= i.warning_threshold THEN '????' ELSE '????' END AS stock_status
+    CASE WHEN i.quantity <= i.warning_threshold THEN '库存预警' ELSE '库存正常' END AS stock_status
 FROM inventory i
 JOIN store s ON i.store_id = s.id
 JOIN medicine m ON i.medicine_id = m.id
@@ -264,7 +264,7 @@ DECLARE
 BEGIN
     SELECT salesperson_id INTO v_salesperson_id FROM sale_order WHERE id = NEW.order_id;
     INSERT INTO operation_log(operator_id, action_type, action_detail)
-    VALUES (v_salesperson_id, '??????', '?????????ID=' || NEW.medicine_id || '???=' || NEW.quantity);
+    VALUES (v_salesperson_id, '销售出库', '销售出库：药品ID=' || NEW.medicine_id || '，数量=' || NEW.quantity);
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

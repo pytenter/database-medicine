@@ -111,6 +111,8 @@ const formatDateTime = (value) => {
 
 const statusTagType = (status) => ({ pending_payment: "warning", ordered: "info", delivering: "primary", completed: "success" }[status] || "info");
 
+const isPlaceholderText = (value) => /^\?{2,}$/.test(String(value || "").trim());
+
 const handleStatusChange = (value) => {
   if (!value) return;
   const current = (logisticsForm.content || "").trim();
@@ -122,10 +124,8 @@ const handleStatusChange = (value) => {
     "订单已创建，等待门店备货。",
     "药店已完成拣货，配送员正在派送。",
     "订单已完成签收，客户已收货。",
-    "????",
-    "???????",
   ];
-  if (!current || contentAutofilled.value || legacyTexts.includes(current)) {
+  if (!current || contentAutofilled.value || legacyTexts.includes(current) || isPlaceholderText(current)) {
     logisticsForm.content = statusContentMap[value] || logisticsForm.content;
     contentAutofilled.value = true;
   }

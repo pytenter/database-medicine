@@ -1,15 +1,16 @@
 from rest_framework import serializers
 
+from apps.common.text import CleanDisplaySerializerMixin, is_placeholder_text
 from apps.inventory.models import Inventory, PurchaseOrder, Store
 
 
-class StoreSerializer(serializers.ModelSerializer):
+class StoreSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Store
         fields = "__all__"
 
 
-class InventorySerializer(serializers.ModelSerializer):
+class InventorySerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
     store_name = serializers.CharField(source="store.name", read_only=True)
     medicine_name = serializers.CharField(source="medicine.name", read_only=True)
     medicine_code = serializers.CharField(source="medicine.code", read_only=True)
@@ -49,7 +50,7 @@ class InventorySerializer(serializers.ModelSerializer):
         return value
 
 
-class PurchaseOrderSerializer(serializers.ModelSerializer):
+class PurchaseOrderSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
     store_name = serializers.CharField(source="store.name", read_only=True)
     manufacturer_name = serializers.CharField(source="manufacturer.name", read_only=True)
     status_display = serializers.CharField(source="get_status_display", read_only=True)
@@ -73,6 +74,12 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if is_placeholder_text(data.get("remark")):
+            data["remark"] = "门店常规补货"
+        return data
 
     def validate_total_amount(self, value):
         if value < 0:
