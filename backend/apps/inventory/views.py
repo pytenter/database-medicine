@@ -1,5 +1,4 @@
-from django.db.models.deletion import ProtectedError
-from rest_framework import permissions, status, viewsets
+﻿from rest_framework import permissions, status, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
@@ -15,15 +14,6 @@ class StoreViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Store.objects.all().order_by("id")
-
-    def destroy(self, request, *args, **kwargs):
-        try:
-            return super().destroy(request, *args, **kwargs)
-        except ProtectedError:
-            return Response(
-                {"detail": "该门店已关联用户、库存、采购单或销售记录，无法直接删除。"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
 
 
 class InventoryPermission(permissions.BasePermission):
@@ -42,7 +32,11 @@ class InventoryViewSet(viewsets.ModelViewSet):
     ordering_fields = ["id", "quantity", "updated_at"]
 
     def get_queryset(self):
-        queryset = Inventory.objects.select_related("store", "medicine", "medicine__manufacturer").all().order_by("id")
+        queryset = (
+            Inventory.objects.select_related("store", "medicine", "medicine__manufacturer")
+            .filter(is_active=True, medicine__is_active=True)
+            .order_by("id")
+        )
         user = self.request.user
         if user.role in {"pharmacy_admin", "salesperson"} and user.store_id:
             queryset = queryset.filter(store_id=user.store_id)
@@ -61,21 +55,22 @@ class InventoryViewSet(viewsets.ModelViewSet):
         self._validate_store_scope(serializer.validated_data.get("store", serializer.instance.store).id)
         serializer.save()
 
+    def destroy(self, request, *args, **kwargs):
+        inventory = self.get_object()
+        self._validate_store_scope(inventory.store_id)
+        inventory.is_active = False
+        inventory.save(update_fields=["is_active", "updated_at"])
+        return Response(
+            {"detail": "库存记录已从当前列表隐藏，历史订单信息保留不受影响。"},
+            status=status.HTTP_200_OK,
+        )
+
 
 class PurchaseOrderViewSet(viewsets.ModelViewSet):
     serializer_class = PurchaseOrderSerializer
     permission_classes = [IsPharmacyAdmin]
     search_fields = ["order_no", "manufacturer__name", "item_summary", "purchaser_name"]
     ordering_fields = ["id", "planned_date", "total_amount", "updated_at"]
-
-    def destroy(self, request, *args, **kwargs):
-        try:
-            return super().destroy(request, *args, **kwargs)
-        except ProtectedError:
-            return Response(
-                {"detail": "该采购单已关联其他业务数据，无法直接删除。"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
 
     def get_queryset(self):
         queryset = PurchaseOrder.objects.select_related("store", "manufacturer").all().order_by("-id")

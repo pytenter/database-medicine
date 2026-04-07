@@ -1,4 +1,4 @@
-from django.db import models
+﻿from django.db import models
 
 from apps.common.models import TimeStampedModel
 
@@ -24,6 +24,7 @@ class Inventory(TimeStampedModel):
     medicine = models.ForeignKey("medicine.Medicine", on_delete=models.CASCADE, related_name="inventories")
     quantity = models.IntegerField(default=0, verbose_name="Quantity")
     warning_threshold = models.IntegerField(default=10, verbose_name="Warning Threshold")
+    is_active = models.BooleanField(default=True, verbose_name="Is Active")
 
     class Meta:
         db_table = "inventory"

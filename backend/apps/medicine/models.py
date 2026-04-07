@@ -1,4 +1,4 @@
-from django.db import models
+﻿from django.db import models
 
 from apps.common.models import TimeStampedModel
 
@@ -7,6 +7,7 @@ class Manufacturer(TimeStampedModel):
     name = models.CharField(max_length=100, unique=True, verbose_name="Manufacturer Name")
     contact_person = models.CharField(max_length=50, blank=True, verbose_name="Contact Person")
     contact_phone = models.CharField(max_length=20, blank=True, verbose_name="Contact Phone")
+    is_active = models.BooleanField(default=True, verbose_name="Is Active")
 
     class Meta:
         db_table = "manufacturer"

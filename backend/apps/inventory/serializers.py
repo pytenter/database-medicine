@@ -1,4 +1,4 @@
-from django.db import transaction
+﻿from django.db import transaction
 from rest_framework import serializers
 
 from apps.common.text import CleanDisplaySerializerMixin, is_placeholder_text
@@ -66,7 +66,8 @@ class InventorySerializer(CleanDisplaySerializerMixin, serializers.ModelSerializ
             if inventory:
                 inventory.quantity += quantity
                 inventory.warning_threshold = warning_threshold
-                inventory.save(update_fields=["quantity", "warning_threshold", "updated_at"])
+                inventory.is_active = True
+                inventory.save(update_fields=["quantity", "warning_threshold", "is_active", "updated_at"])
                 return inventory
 
             return super().create(validated_data)

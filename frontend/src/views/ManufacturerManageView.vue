@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-card page-box">
     <div class="toolbar">
       <div>
@@ -105,10 +105,14 @@ const submitForm = async () => {
 
 const removeManufacturer = async (row) => {
   try {
-      await ElMessageBox.confirm(`确认删除厂商 ${row.name} 吗？`, "提示", { type: "warning" });
-      await deleteManufacturerApi(row.id);
-      ElMessage.success("厂商已删除。");
-      loadManufacturers();
+    await ElMessageBox.confirm(
+      `确认删除厂商 ${row.name} 吗？删除后将从当前列表隐藏，历史采购和药品数据会保留。`,
+      "提示",
+      { type: "warning", confirmButtonText: "确认删除", cancelButtonText: "取消" },
+    );
+    const { data } = await deleteManufacturerApi(row.id);
+    ElMessage.success(data?.detail || "厂商已从当前列表隐藏，历史采购和药品数据保留。");
+    loadManufacturers();
   } catch (error) {
     if (error === "cancel") return;
     ElMessage.error(error.response?.data?.detail || "删除厂商失败。");

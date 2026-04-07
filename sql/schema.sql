@@ -63,6 +63,7 @@ CREATE TABLE manufacturer (
     name VARCHAR(100) NOT NULL UNIQUE,
     contact_person VARCHAR(50),
     contact_phone VARCHAR(20),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -103,6 +104,7 @@ CREATE TABLE inventory (
     medicine_id INTEGER NOT NULL,
     quantity INTEGER NOT NULL DEFAULT 0,
     warning_threshold INTEGER NOT NULL DEFAULT 10,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_inventory_store_medicine UNIQUE (store_id, medicine_id),

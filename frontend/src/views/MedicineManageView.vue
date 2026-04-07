@@ -150,6 +150,20 @@ const resetForm = () => {
   });
 };
 
+const ensureManufacturerOption = (row) => {
+  if (!row?.manufacturer || !row?.manufacturer_name) return;
+  const exists = manufacturers.value.some((item) => item.id === row.manufacturer);
+  if (!exists) {
+    manufacturers.value = [
+      ...manufacturers.value,
+      {
+        id: row.manufacturer,
+        name: `${row.manufacturer_name}（已隐藏）`,
+      },
+    ];
+  }
+};
+
 const loadMedicines = async () => {
   const { data } = await getMedicinesApi(keyword.value ? { search: keyword.value } : {});
   medicines.value = data;
@@ -167,6 +181,7 @@ const loadBaseData = async () => {
 const openDialog = (row = null) => {
   resetForm();
   if (row) {
+    ensureManufacturerOption(row);
     editingId.value = row.id;
     Object.assign(form, { ...row });
   }
@@ -175,23 +190,32 @@ const openDialog = (row = null) => {
 
 const submitForm = async () => {
   const payload = { ...form };
-  if (editingId.value) {
-    await updateMedicineApi(editingId.value, payload);
-    ElMessage.success("药品修改成功。")
-  } else {
-    await createMedicineApi(payload);
-    ElMessage.success("药品创建成功。")
+  try {
+    if (editingId.value) {
+      await updateMedicineApi(editingId.value, payload);
+      ElMessage.success("药品修改成功。");
+    } else {
+      await createMedicineApi(payload);
+      ElMessage.success("药品创建成功。");
+    }
+    dialogVisible.value = false;
+    loadMedicines();
+    loadBaseData();
+  } catch (error) {
+    ElMessage.error(error.response?.data?.detail || "保存药品失败。");
   }
-  dialogVisible.value = false;
-  loadMedicines();
 };
 
 const removeMedicine = async (row) => {
   try {
-      await ElMessageBox.confirm(`确认删除药品 ${row.name} 吗？`, "提示", { type: "warning" });
-      await deleteMedicineApi(row.id);
-      ElMessage.success("药品删除成功。")
-      loadMedicines();
+    await ElMessageBox.confirm(
+      `确认删除药品 ${row.name} 吗？删除后将从当前列表隐藏，历史订单信息会保留。`,
+      "提示",
+      { type: "warning", confirmButtonText: "确认删除", cancelButtonText: "取消" },
+    );
+    const { data } = await deleteMedicineApi(row.id);
+    ElMessage.success(data?.detail || "药品已从当前列表隐藏，历史订单信息保留不受影响。");
+    loadMedicines();
   } catch (error) {
     if (error === "cancel") return;
     ElMessage.error(error.response?.data?.detail || "删除药品失败。");
@@ -199,19 +223,27 @@ const removeMedicine = async (row) => {
 };
 
 const submitManufacturer = async () => {
-  await createManufacturerApi(manufacturerForm);
-  ElMessage.success("厂商创建成功。")
-  manufacturerDialog.value = false;
-  Object.assign(manufacturerForm, { name: "", contact_person: "", contact_phone: "" });
-  loadBaseData();
+  try {
+    await createManufacturerApi(manufacturerForm);
+    ElMessage.success("厂商创建成功。");
+    manufacturerDialog.value = false;
+    Object.assign(manufacturerForm, { name: "", contact_person: "", contact_phone: "" });
+    loadBaseData();
+  } catch (error) {
+    ElMessage.error(error.response?.data?.detail || "保存厂商失败。");
+  }
 };
 
 const submitCategory = async () => {
-  await createCategoryApi(categoryForm);
-  ElMessage.success("分类创建成功。")
-  categoryDialog.value = false;
-  Object.assign(categoryForm, { name: "", description: "" });
-  loadBaseData();
+  try {
+    await createCategoryApi(categoryForm);
+    ElMessage.success("分类创建成功。");
+    categoryDialog.value = false;
+    Object.assign(categoryForm, { name: "", description: "" });
+    loadBaseData();
+  } catch (error) {
+    ElMessage.error(error.response?.data?.detail || "保存分类失败。");
+  }
 };
 
 onMounted(() => {

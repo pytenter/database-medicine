@@ -1,5 +1,4 @@
-from django.db.models.deletion import ProtectedError
-from rest_framework import permissions, status, viewsets
+﻿from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 
 from apps.accounts.permissions import IsPharmacyAdmin
@@ -17,19 +16,21 @@ class ReadOnlyForSalesWriteForPharmacyAdmin(permissions.BasePermission):
 
 
 class ManufacturerViewSet(viewsets.ModelViewSet):
-    queryset = Manufacturer.objects.all().order_by("id")
     serializer_class = ManufacturerSerializer
     permission_classes = [IsPharmacyAdmin]
     search_fields = ["name", "contact_person", "contact_phone"]
 
+    def get_queryset(self):
+        return Manufacturer.objects.filter(is_active=True).order_by("id")
+
     def destroy(self, request, *args, **kwargs):
-        try:
-            return super().destroy(request, *args, **kwargs)
-        except ProtectedError:
-            return Response(
-                {"detail": "该厂商已被药品或采购单引用，无法直接删除。"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        manufacturer = self.get_object()
+        manufacturer.is_active = False
+        manufacturer.save(update_fields=["is_active", "updated_at"])
+        return Response(
+            {"detail": "厂商已从当前列表隐藏，历史采购和药品数据保留。"},
+            status=status.HTTP_200_OK,
+        )
 
 
 class MedicineCategoryViewSet(viewsets.ModelViewSet):
@@ -38,28 +39,26 @@ class MedicineCategoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsPharmacyAdmin]
     search_fields = ["name", "description"]
 
-    def destroy(self, request, *args, **kwargs):
-        try:
-            return super().destroy(request, *args, **kwargs)
-        except ProtectedError:
-            return Response(
-                {"detail": "该分类已被药品引用，无法直接删除。"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
 
 class MedicineViewSet(viewsets.ModelViewSet):
-    queryset = Medicine.objects.select_related("manufacturer", "category").all().order_by("id")
     serializer_class = MedicineSerializer
     permission_classes = [ReadOnlyForSalesWriteForPharmacyAdmin]
     search_fields = ["code", "name", "manufacturer__name"]
     ordering_fields = ["id", "code", "name", "retail_price"]
 
+    def get_queryset(self):
+        return (
+            Medicine.objects.select_related("manufacturer", "category")
+            .filter(is_active=True)
+            .order_by("id")
+        )
+
     def destroy(self, request, *args, **kwargs):
-        try:
-            return super().destroy(request, *args, **kwargs)
-        except ProtectedError:
-            return Response(
-                {"detail": "该药品已关联库存、销售记录或其他业务数据，无法直接删除。"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        medicine = self.get_object()
+        medicine.is_active = False
+        medicine.save(update_fields=["is_active", "updated_at"])
+        medicine.inventories.update(is_active=False)
+        return Response(
+            {"detail": "药品已从当前列表隐藏，历史订单信息保留不受影响。"},
+            status=status.HTTP_200_OK,
+        )

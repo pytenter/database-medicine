@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-card page-box">
     <div class="toolbar">
       <div>
@@ -13,7 +13,7 @@
     </div>
 
     <el-table :data="inventoryRows" border>
-      <el-table-column prop="store_name" label="门店" min-width="140" />
+      <el-table-column prop="store_name" label="所属门店" min-width="140" />
       <el-table-column prop="medicine_code" label="药品编码" width="130" />
       <el-table-column prop="medicine_name" label="药品名称" min-width="170" />
       <el-table-column prop="manufacturer_name" label="生产厂商" min-width="160" />
@@ -127,10 +127,14 @@ const submitForm = async () => {
 
 const removeRow = async (row) => {
   try {
-      await ElMessageBox.confirm(`确认删除 ${row.medicine_name} 的库存记录吗？`, "提示", { type: "warning" });
-      await deleteInventoryApi(row.id);
-      ElMessage.success("库存记录删除成功。");
-      loadInventory();
+    await ElMessageBox.confirm(
+      `确认删除 ${row.medicine_name} 的库存记录吗？删除后将从当前列表隐藏，历史订单信息会保留。`,
+      "提示",
+      { type: "warning", confirmButtonText: "确认删除", cancelButtonText: "取消" },
+    );
+    const { data } = await deleteInventoryApi(row.id);
+    ElMessage.success(data?.detail || "库存记录已从当前列表隐藏，历史订单信息保留不受影响。");
+    loadInventory();
   } catch (error) {
     if (error === "cancel") return;
     ElMessage.error(error.response?.data?.detail || "删除库存记录失败。");
