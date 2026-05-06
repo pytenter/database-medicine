@@ -1,5 +1,5 @@
 <template>
-  <div class="global-progress" :class="{ active: pending > 0 }">
+  <div class="global-progress" :class="{ active: pending > 0 }" aria-hidden="true">
     <div class="global-progress-bar" />
   </div>
 </template>

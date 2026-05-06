@@ -6,18 +6,24 @@ const http = axios.create({
   timeout: 10000,
 });
 
-http.interceptors.request.use((config) => {
-  startRequest();
-  config.__counted = true;
-  const token = localStorage.getItem("access_token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+http.interceptors.request.use(
+  (config) => {
+    startRequest();
+    config.__counted = true;
+
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    if (error.config?.__counted) {
+      finishRequest();
+    }
+    return Promise.reject(error);
   }
-  return config;
-}, (error) => {
-  finishRequest();
-  return Promise.reject(error);
-});
+);
 
 http.interceptors.response.use(
   (response) => {
