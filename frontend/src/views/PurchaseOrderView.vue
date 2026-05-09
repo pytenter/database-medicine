@@ -16,7 +16,7 @@
     </div>
 
     <el-table :data="orders" border>
-      <el-table-column prop="order_no" label="采购单号" min-width="160" />
+      <el-table-column prop="order_no" label="采购单号" min-width="170" />
       <el-table-column prop="manufacturer_name" label="厂商名称" min-width="160" />
       <el-table-column prop="item_summary" label="采购内容" min-width="220" />
       <el-table-column prop="purchaser_name" label="采购人" min-width="120" />
@@ -42,7 +42,7 @@
 
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑采购单' : '新增采购单'" width="620px">
       <el-form :model="form" label-width="110px">
-        <el-form-item label="采购单号 ⭐️"><el-input v-model="form.order_no" :disabled="Boolean(editingId)" /></el-form-item>
+        <el-form-item label="采购单号"><el-input :model-value="editingId ? form.order_no : '系统自动生成'" disabled /></el-form-item>
         <el-form-item label="厂商名称 ⭐️">
           <el-select v-model="form.manufacturer" style="width: 100%;">
             <el-option v-for="item in manufacturers" :key="item.id" :label="item.name" :value="item.id" />
@@ -107,7 +107,7 @@ const form = reactive({
 const resetForm = () => {
   editingId.value = null;
   Object.assign(form, {
-    order_no: `PO${Date.now()}`,
+    order_no: "",
     store: currentUser?.store || null,
     manufacturer: null,
     purchaser_name: currentUser?.full_name || "",
@@ -124,7 +124,7 @@ const formatDateTime = (value) => {
   return value.slice(0, 16).replace("T", " ");
 };
 
-const formatMoney = (value) => `￥ ${Number(value || 0).toFixed(2)}`;
+const formatMoney = (value) => `¥${Number(value || 0).toFixed(2)}`;
 
 const statusTagType = (status) => ({ pending: "warning", ordered: "primary", received: "success", cancelled: "info" }[status] || "info");
 
@@ -169,12 +169,9 @@ const openDialog = (row = null) => {
 const submitForm = async () => {
   try {
     const payload = { ...form, store: currentUser?.store };
+    delete payload.order_no;
     if (!payload.store) {
       ElMessage.warning("当前账号未关联门店，无法创建采购单。");
-      return;
-    }
-    if (!payload.order_no.trim()) {
-      ElMessage.warning("请填写采购单号。");
       return;
     }
     if (!payload.manufacturer) {
@@ -213,10 +210,10 @@ const submitForm = async () => {
 
 const removeOrder = async (row) => {
   try {
-      await ElMessageBox.confirm(`确认删除采购单 ${row.order_no} 吗？`, "提示", { type: "warning" });
-      await deletePurchaseOrderApi(row.id);
-      ElMessage.success("采购单已删除。");
-      loadOrders();
+    await ElMessageBox.confirm(`确认删除采购单 ${row.order_no} 吗？`, "提示", { type: "warning" });
+    await deletePurchaseOrderApi(row.id);
+    ElMessage.success("采购单已删除。");
+    loadOrders();
   } catch (error) {
     if (error === "cancel") return;
     ElMessage.error(error.response?.data?.detail || "删除采购单失败。");

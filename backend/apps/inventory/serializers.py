@@ -1,6 +1,7 @@
-﻿from django.db import transaction
+from django.db import transaction
 from rest_framework import serializers
 
+from apps.common.numbering import next_daily_code
 from apps.common.text import CleanDisplaySerializerMixin, is_placeholder_text
 from apps.inventory.models import Inventory, PurchaseOrder, Store
 
@@ -80,6 +81,7 @@ class PurchaseOrderSerializer(CleanDisplaySerializerMixin, serializers.ModelSeri
 
     class Meta:
         model = PurchaseOrder
+        read_only_fields = ["order_no"]
         fields = [
             "id",
             "order_no",
@@ -108,3 +110,7 @@ class PurchaseOrderSerializer(CleanDisplaySerializerMixin, serializers.ModelSeri
         if value < 0:
             raise serializers.ValidationError("采购金额不能为负数。")
         return value
+
+    def create(self, validated_data):
+        validated_data["order_no"] = next_daily_code(PurchaseOrder, "order_no", "PO")
+        return super().create(validated_data)

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from apps.common.numbering import next_prefixed_sequence_code
 from apps.common.text import CleanDisplaySerializerMixin
 from apps.medicine.models import Manufacturer, Medicine, MedicineCategory
 
@@ -22,6 +23,7 @@ class MedicineSerializer(CleanDisplaySerializerMixin, serializers.ModelSerialize
 
     class Meta:
         model = Medicine
+        read_only_fields = ["code"]
         fields = [
             "id",
             "code",
@@ -50,3 +52,7 @@ class MedicineSerializer(CleanDisplaySerializerMixin, serializers.ModelSerialize
         if retail_price is not None and retail_price <= 0:
             raise serializers.ValidationError("零售价必须大于 0。")
         return attrs
+
+    def create(self, validated_data):
+        validated_data["code"] = next_prefixed_sequence_code(Medicine, "code", "MED")
+        return super().create(validated_data)

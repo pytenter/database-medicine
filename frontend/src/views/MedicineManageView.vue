@@ -37,7 +37,7 @@
 
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑药品' : '新增药品'" width="680px">
       <el-form :model="form" label-width="140px">
-        <el-form-item label="药品编码 ⭐️"><el-input v-model="form.code" /></el-form-item>
+        <el-form-item label="药品编码"><el-input :model-value="editingId ? form.code : '系统自动生成'" disabled /></el-form-item>
         <el-form-item label="药品名称 ⭐️"><el-input v-model="form.name" /></el-form-item>
         <el-form-item label="规格 ⭐️"><el-input v-model="form.specification" /></el-form-item>
         <el-form-item label="单位 ⭐️"><el-input v-model="form.unit" /></el-form-item>
@@ -189,10 +189,7 @@ const openDialog = (row = null) => {
 
 const submitForm = async () => {
   const payload = { ...form };
-  if (!payload.code.trim()) {
-    ElMessage.warning("请填写药品编码。");
-    return;
-  }
+  if (!editingId.value) delete payload.code;
   if (!payload.name.trim()) {
     ElMessage.warning("请填写药品名称。");
     return;
@@ -223,6 +220,7 @@ const submitForm = async () => {
   }
   try {
     if (editingId.value) {
+      delete payload.code;
       await updateMedicineApi(editingId.value, payload);
       ElMessage.success("药品修改成功。");
     } else {

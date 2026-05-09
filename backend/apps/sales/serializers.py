@@ -1,9 +1,9 @@
 from decimal import Decimal
-from uuid import uuid4
 
 from django.db import transaction
 from rest_framework import serializers
 
+from apps.common.numbering import next_daily_code
 from apps.common.text import CleanDisplaySerializerMixin
 from apps.inventory.models import Inventory
 from apps.sales.models import (
@@ -100,7 +100,7 @@ class SaleCreateSerializer(serializers.Serializer):
     def create(self, validated_data):
         user = self.context["request"].user
         order = SaleOrder.objects.create(
-            order_no=f"SO{uuid4().hex[:12].upper()}",
+            order_no=next_daily_code(SaleOrder, "order_no", "SO"),
             store_id=user.store_id,
             salesperson=user,
             customer_name=validated_data.get("customer_name", ""),

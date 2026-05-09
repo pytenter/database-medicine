@@ -232,7 +232,7 @@ def seed_orders(salespeople, medicine_map):
     order_index = 300
     for idx, salesperson in enumerate(salespeople):
         for offset in range(2):
-            order_no = f"SO20260403{order_index:03d}"
+            order_no = f"SO20260403{order_index:04d}"
             order_index += 1
             if SaleOrder.objects.filter(order_no=order_no).exists():
                 continue
@@ -319,18 +319,18 @@ with transaction.atomic():
         category_map[name] = ensure_category(name, description)
 
     medicine_specs = [
-        ("MED016", C(r"\u677f\u84dd\u6839\u9897\u7c92"), "10g*20\u888b", C(r"\u76d2"), "12.50", "18.00", C(r"\u5cad\u5357\u4e2d\u836f\u5382"), C(r"\u4e2d\u6210\u836f"), "ZC202604016"),
-        ("MED017", C(r"\u8fde\u82b1\u6e05\u761f\u80f6\u56ca"), "0.35g*24\u7c92", C(r"\u76d2"), "19.80", "29.00", C(r"\u534e\u5317\u5236\u836f\u4f9b\u5e94\u94fe"), C(r"\u4e2d\u6210\u836f"), "ZC202604017"),
-        ("MED018", C(r"\u5ddd\u8d1d\u6797\u6777\u818f"), "120ml", C(r"\u74f6"), "15.00", "22.00", C(r"\u6676\u76db\u836f\u4e1a\u516c\u53f8"), C(r"\u547c\u5438\u7528\u836f"), "ZC202604018"),
-        ("MED019", C(r"\u590d\u65b9\u6c28\u915a\u70f7\u80fa\u7247"), "12\u7247*2\u677f", C(r"\u76d2"), "8.60", "13.50", C(r"\u5eb7\u5065\u751f\u7269\u6709\u9650\u516c\u53f8"), C(r"\u611f\u5192\u836f"), "ZC202604019"),
-        ("MED020", C(r"\u53cc\u9ec4\u8fde\u53e3\u670d\u6db2"), "10ml*10\u652f", C(r"\u76d2"), "14.20", "21.00", C(r"\u5cad\u5357\u4e2d\u836f\u5382"), C(r"\u4e2d\u6210\u836f"), "ZC202604020"),
-        ("MED021", C(r"\u76d0\u9178\u5de6\u6c27\u6c1f\u6c99\u661f\u7247"), "0.5g*6\u7247", C(r"\u76d2"), "16.50", "24.00", C(r"\u534e\u5357\u5236\u836f\u80a1\u4efd\u6709\u9650\u516c\u53f8"), C(r"\u6297\u751f\u7d20"), "ZC202604021"),
-        ("MED022", C(r"\u6c28\u6c2f\u5730\u5e73\u7247"), "5mg*28\u7247", C(r"\u76d2"), "11.80", "18.50", C(r"\u767e\u6c47\u5eb7\u590d\u836f\u4e1a"), C(r"\u6162\u75c5\u7528\u836f"), "ZC202604022"),
-        ("MED023", C(r"\u963f\u53f8\u5339\u6797\u80a0\u6eb6\u7247"), "100mg*30\u7247", C(r"\u76d2"), "9.80", "15.00", C(r"\u4e1c\u5357\u767d\u836f"), C(r"\u6162\u75c5\u7528\u836f"), "ZC202604023"),
-        ("MED024", C(r"\u85ff\u9999\u6b63\u6c14\u53e3\u670d\u6db2"), "10ml*10\u652f", C(r"\u76d2"), "13.00", "19.80", C(r"\u5eb7\u5065\u751f\u7269\u6709\u9650\u516c\u53f8"), C(r"\u80a0\u80c3\u7528\u836f"), "ZC202604024"),
-        ("MED025", C(r"\u5f00\u585e\u9732"), "20ml*2\u652f", C(r"\u76d2"), "5.60", "9.00", C(r"\u5b89\u548c\u5065\u5eb7\u836f\u4e1a"), C(r"\u80a0\u80c3\u7528\u836f"), "ZC202604025"),
-        ("MED026", C(r"\u5c0f\u513f\u67f4\u6842\u9000\u70ed\u9897\u7c92"), "5g*10\u888b", C(r"\u76d2"), "10.20", "16.00", C(r"\u6676\u76db\u836f\u4e1a\u516c\u53f8"), C(r"\u513f\u79d1\u7528\u836f"), "ZC202604026"),
-        ("MED027", C(r"\u5c0f\u513f\u6c28\u916c\u9ec4\u90a3\u654f\u9897\u7c92"), "6g*10\u888b", C(r"\u76d2"), "13.20", "19.00", C(r"\u767e\u6c47\u5eb7\u590d\u836f\u4e1a"), C(r"\u513f\u79d1\u7528\u836f"), "ZC202604027"),
+        ("MED0016", C(r"\u677f\u84dd\u6839\u9897\u7c92"), "10g*20\u888b", C(r"\u76d2"), "12.50", "18.00", C(r"\u5cad\u5357\u4e2d\u836f\u5382"), C(r"\u4e2d\u6210\u836f"), "ZC202604016"),
+        ("MED0017", C(r"\u8fde\u82b1\u6e05\u761f\u80f6\u56ca"), "0.35g*24\u7c92", C(r"\u76d2"), "19.80", "29.00", C(r"\u534e\u5317\u5236\u836f\u4f9b\u5e94\u94fe"), C(r"\u4e2d\u6210\u836f"), "ZC202604017"),
+        ("MED0018", C(r"\u5ddd\u8d1d\u6797\u6777\u818f"), "120ml", C(r"\u74f6"), "15.00", "22.00", C(r"\u6676\u76db\u836f\u4e1a\u516c\u53f8"), C(r"\u547c\u5438\u7528\u836f"), "ZC202604018"),
+        ("MED0019", C(r"\u590d\u65b9\u6c28\u915a\u70f7\u80fa\u7247"), "12\u7247*2\u677f", C(r"\u76d2"), "8.60", "13.50", C(r"\u5eb7\u5065\u751f\u7269\u6709\u9650\u516c\u53f8"), C(r"\u611f\u5192\u836f"), "ZC202604019"),
+        ("MED0020", C(r"\u53cc\u9ec4\u8fde\u53e3\u670d\u6db2"), "10ml*10\u652f", C(r"\u76d2"), "14.20", "21.00", C(r"\u5cad\u5357\u4e2d\u836f\u5382"), C(r"\u4e2d\u6210\u836f"), "ZC202604020"),
+        ("MED0021", C(r"\u76d0\u9178\u5de6\u6c27\u6c1f\u6c99\u661f\u7247"), "0.5g*6\u7247", C(r"\u76d2"), "16.50", "24.00", C(r"\u534e\u5357\u5236\u836f\u80a1\u4efd\u6709\u9650\u516c\u53f8"), C(r"\u6297\u751f\u7d20"), "ZC202604021"),
+        ("MED0022", C(r"\u6c28\u6c2f\u5730\u5e73\u7247"), "5mg*28\u7247", C(r"\u76d2"), "11.80", "18.50", C(r"\u767e\u6c47\u5eb7\u590d\u836f\u4e1a"), C(r"\u6162\u75c5\u7528\u836f"), "ZC202604022"),
+        ("MED0023", C(r"\u963f\u53f8\u5339\u6797\u80a0\u6eb6\u7247"), "100mg*30\u7247", C(r"\u76d2"), "9.80", "15.00", C(r"\u4e1c\u5357\u767d\u836f"), C(r"\u6162\u75c5\u7528\u836f"), "ZC202604023"),
+        ("MED0024", C(r"\u85ff\u9999\u6b63\u6c14\u53e3\u670d\u6db2"), "10ml*10\u652f", C(r"\u76d2"), "13.00", "19.80", C(r"\u5eb7\u5065\u751f\u7269\u6709\u9650\u516c\u53f8"), C(r"\u80a0\u80c3\u7528\u836f"), "ZC202604024"),
+        ("MED0025", C(r"\u5f00\u585e\u9732"), "20ml*2\u652f", C(r"\u76d2"), "5.60", "9.00", C(r"\u5b89\u548c\u5065\u5eb7\u836f\u4e1a"), C(r"\u80a0\u80c3\u7528\u836f"), "ZC202604025"),
+        ("MED0026", C(r"\u5c0f\u513f\u67f4\u6842\u9000\u70ed\u9897\u7c92"), "5g*10\u888b", C(r"\u76d2"), "10.20", "16.00", C(r"\u6676\u76db\u836f\u4e1a\u516c\u53f8"), C(r"\u513f\u79d1\u7528\u836f"), "ZC202604026"),
+        ("MED0027", C(r"\u5c0f\u513f\u6c28\u916c\u9ec4\u90a3\u654f\u9897\u7c92"), "6g*10\u888b", C(r"\u76d2"), "13.20", "19.00", C(r"\u767e\u6c47\u5eb7\u590d\u836f\u4e1a"), C(r"\u513f\u79d1\u7528\u836f"), "ZC202604027"),
     ]
     medicine_map = {m.code: m for m in Medicine.objects.all()}
     for code, name, specification, unit, purchase_price, retail_price, manufacturer_name, category_name, approval_number in medicine_specs:
@@ -339,12 +339,12 @@ with transaction.atomic():
         medicine_map[code] = ensure_medicine(code, name, specification, unit, purchase_price, retail_price, manufacturer, category, approval_number)
 
     inventory_plan = {
-        "ST001": ["MED001", "MED002", "MED003", "MED004", "MED016", "MED017", "MED018", "MED022", "MED023", "MED026"],
-        "ST002": ["MED001", "MED005", "MED006", "MED007", "MED017", "MED019", "MED020", "MED022", "MED024", "MED027"],
-        "ST003": ["MED002", "MED004", "MED008", "MED009", "MED016", "MED018", "MED021", "MED023", "MED024", "MED026"],
-        "ST004": ["MED003", "MED005", "MED010", "MED011", "MED017", "MED019", "MED020", "MED021", "MED025", "MED027"],
-        "ST005": ["MED001", "MED006", "MED012", "MED013", "MED016", "MED018", "MED022", "MED023", "MED024", "MED025"],
-        "ST006": ["MED002", "MED007", "MED014", "MED015", "MED017", "MED020", "MED021", "MED024", "MED026", "MED027"],
+        "ST001": ["MED0001", "MED0002", "MED0003", "MED0004", "MED0016", "MED0017", "MED0018", "MED0022", "MED0023", "MED0026"],
+        "ST002": ["MED0001", "MED0005", "MED0006", "MED0007", "MED0017", "MED0019", "MED0020", "MED0022", "MED0024", "MED0027"],
+        "ST003": ["MED0002", "MED0004", "MED0008", "MED0009", "MED0016", "MED0018", "MED0021", "MED0023", "MED0024", "MED0026"],
+        "ST004": ["MED0003", "MED0005", "MED0010", "MED0011", "MED0017", "MED0019", "MED0020", "MED0021", "MED0025", "MED0027"],
+        "ST005": ["MED0001", "MED0006", "MED0012", "MED0013", "MED0016", "MED0018", "MED0022", "MED0023", "MED0024", "MED0025"],
+        "ST006": ["MED0002", "MED0007", "MED0014", "MED0015", "MED0017", "MED0020", "MED0021", "MED0024", "MED0026", "MED0027"],
     }
     for store_code, codes in inventory_plan.items():
         store = stores[store_code]
@@ -353,14 +353,14 @@ with transaction.atomic():
 
     pharmacy_admins = {user.store_id: user for user in User.objects.filter(role=RoleChoices.PHARMACY_ADMIN).order_by("id") if user.store_id and user.store_id not in []}
     purchase_specs = [
-        ("PO2026040301", "ST001", C(r"\u5e7f\u5dde\u533b\u836f\u96c6\u56e2"), C(r"\u95e8\u5e97\u6625\u5b63\u8865\u8d27\u8ba1\u5212"), PurchaseOrderStatusChoices.ORDERED, "1380.00", 3, C(r"\u611f\u5192\u836f\u3001\u9000\u70e7\u836f\u8865\u8d27")),
-        ("PO2026040302", "ST002", C(r"\u6676\u76db\u836f\u4e1a\u516c\u53f8"), C(r"\u4e1c\u533a\u95e8\u5e97\u5468\u5ea6\u91c7\u8d2d"), PurchaseOrderStatusChoices.PENDING, "920.00", 5, C(r"\u54b3\u55fd\u7c7b\u548c\u80a0\u80c3\u7528\u836f\u8865\u8d27")),
-        ("PO2026040303", "ST003", C(r"\u767e\u6c47\u5eb7\u590d\u836f\u4e1a"), C(r"\u5357\u7ad9\u95e8\u5e97\u6708\u4e2d\u91c7\u8d2d"), PurchaseOrderStatusChoices.RECEIVED, "1560.00", 2, C(r"\u6162\u75c5\u836f\u548c\u513f\u79d1\u7528\u836f\u5230\u8d27")),
-        ("PO2026040304", "ST004", C(r"\u5eb7\u5065\u751f\u7269\u6709\u9650\u516c\u53f8"), C(r"\u897f\u533a\u95e8\u5e97\u5047\u65e5\u5907\u8d27"), PurchaseOrderStatusChoices.ORDERED, "1040.00", 4, C(r"\u611f\u5192\u836f\u548c\u4e2d\u6210\u836f\u589e\u8865")),
-        ("PO2026040305", "ST005", C(r"\u4e1c\u5357\u767d\u836f"), C(r"\u5317\u57ce\u95e8\u5e97\u4f1a\u5458\u65e5\u5907\u8d27"), PurchaseOrderStatusChoices.PENDING, "1188.00", 6, C(r"\u5fc3\u8840\u7ba1\u548c\u80a0\u80c3\u7528\u836f\u8865\u8d27")),
-        ("PO2026040306", "ST006", C(r"\u5cad\u5357\u4e2d\u836f\u5382"), C(r"\u5927\u5b66\u57ce\u95e8\u5e97\u5468\u672b\u5907\u8d27"), PurchaseOrderStatusChoices.ORDERED, "980.00", 3, C(r"\u513f\u79d1\u7528\u836f\u4e0e\u547c\u5438\u7528\u836f\u91c7\u8d2d")),
-        ("PO2026040307", "ST001", C(r"\u534e\u5317\u5236\u836f\u4f9b\u5e94\u94fe"), C(r"\u5e02\u4e2d\u5fc3\u95e8\u5e97\u6162\u75c5\u836f\u8865\u8d27"), PurchaseOrderStatusChoices.PENDING, "1420.00", 7, C(r"\u9ad8\u8840\u538b\u3001\u7cd6\u5c3f\u75c5\u836f\u54c1\u91c7\u8d2d")),
-        ("PO2026040308", "ST002", C(r"\u5b89\u548c\u5065\u5eb7\u836f\u4e1a"), C(r"\u4e1c\u533a\u95e8\u5e97\u5916\u7528\u836f\u5907\u8d27"), PurchaseOrderStatusChoices.RECEIVED, "760.00", 1, C(r"\u5916\u7528\u836f\u53ca\u6d88\u6bd2\u7528\u54c1\u5230\u8d27")),
+        ("PO202604030001", "ST001", C(r"\u5e7f\u5dde\u533b\u836f\u96c6\u56e2"), C(r"\u95e8\u5e97\u6625\u5b63\u8865\u8d27\u8ba1\u5212"), PurchaseOrderStatusChoices.ORDERED, "1380.00", 3, C(r"\u611f\u5192\u836f\u3001\u9000\u70e7\u836f\u8865\u8d27")),
+        ("PO202604030002", "ST002", C(r"\u6676\u76db\u836f\u4e1a\u516c\u53f8"), C(r"\u4e1c\u533a\u95e8\u5e97\u5468\u5ea6\u91c7\u8d2d"), PurchaseOrderStatusChoices.PENDING, "920.00", 5, C(r"\u54b3\u55fd\u7c7b\u548c\u80a0\u80c3\u7528\u836f\u8865\u8d27")),
+        ("PO202604030003", "ST003", C(r"\u767e\u6c47\u5eb7\u590d\u836f\u4e1a"), C(r"\u5357\u7ad9\u95e8\u5e97\u6708\u4e2d\u91c7\u8d2d"), PurchaseOrderStatusChoices.RECEIVED, "1560.00", 2, C(r"\u6162\u75c5\u836f\u548c\u513f\u79d1\u7528\u836f\u5230\u8d27")),
+        ("PO202604030004", "ST004", C(r"\u5eb7\u5065\u751f\u7269\u6709\u9650\u516c\u53f8"), C(r"\u897f\u533a\u95e8\u5e97\u5047\u65e5\u5907\u8d27"), PurchaseOrderStatusChoices.ORDERED, "1040.00", 4, C(r"\u611f\u5192\u836f\u548c\u4e2d\u6210\u836f\u589e\u8865")),
+        ("PO202604030005", "ST005", C(r"\u4e1c\u5357\u767d\u836f"), C(r"\u5317\u57ce\u95e8\u5e97\u4f1a\u5458\u65e5\u5907\u8d27"), PurchaseOrderStatusChoices.PENDING, "1188.00", 6, C(r"\u5fc3\u8840\u7ba1\u548c\u80a0\u80c3\u7528\u836f\u8865\u8d27")),
+        ("PO202604030006", "ST006", C(r"\u5cad\u5357\u4e2d\u836f\u5382"), C(r"\u5927\u5b66\u57ce\u95e8\u5e97\u5468\u672b\u5907\u8d27"), PurchaseOrderStatusChoices.ORDERED, "980.00", 3, C(r"\u513f\u79d1\u7528\u836f\u4e0e\u547c\u5438\u7528\u836f\u91c7\u8d2d")),
+        ("PO202604030007", "ST001", C(r"\u534e\u5317\u5236\u836f\u4f9b\u5e94\u94fe"), C(r"\u5e02\u4e2d\u5fc3\u95e8\u5e97\u6162\u75c5\u836f\u8865\u8d27"), PurchaseOrderStatusChoices.PENDING, "1420.00", 7, C(r"\u9ad8\u8840\u538b\u3001\u7cd6\u5c3f\u75c5\u836f\u54c1\u91c7\u8d2d")),
+        ("PO202604030008", "ST002", C(r"\u5b89\u548c\u5065\u5eb7\u836f\u4e1a"), C(r"\u4e1c\u533a\u95e8\u5e97\u5916\u7528\u836f\u5907\u8d27"), PurchaseOrderStatusChoices.RECEIVED, "760.00", 1, C(r"\u5916\u7528\u836f\u53ca\u6d88\u6bd2\u7528\u54c1\u5230\u8d27")),
     ]
     for order_no, store_code, manufacturer_name, remark, status, total_amount, days_offset, summary in purchase_specs:
         store = stores[store_code]
@@ -404,16 +404,16 @@ with transaction.atomic():
             )
 
     order_medicine_map = {
-        "cold": medicine_map["MED001"],
-        "antibiotic": medicine_map["MED002"],
-        "vitamin": medicine_map["MED003"],
-        "fever": medicine_map["MED004"],
-        "stomach": medicine_map["MED005"],
-        "herbal": medicine_map["MED016"],
-        "capsule": medicine_map["MED017"],
-        "chronic": medicine_map["MED022"],
-        "heart": medicine_map["MED023"],
-        "child": medicine_map["MED026"],
+        "cold": medicine_map["MED0001"],
+        "antibiotic": medicine_map["MED0002"],
+        "vitamin": medicine_map["MED0003"],
+        "fever": medicine_map["MED0004"],
+        "stomach": medicine_map["MED0005"],
+        "herbal": medicine_map["MED0016"],
+        "capsule": medicine_map["MED0017"],
+        "chronic": medicine_map["MED0022"],
+        "heart": medicine_map["MED0023"],
+        "child": medicine_map["MED0026"],
     }
     seed_orders(all_salespeople, order_medicine_map)
 

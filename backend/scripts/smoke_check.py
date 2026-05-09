@@ -55,7 +55,7 @@ def main():
         access = response.json()['access']
         client.credentials(HTTP_AUTHORIZATION=f'Bearer {access}')
 
-        before_quantity = client.get('/api/inventory/', {'search': 'MED001'}).json()[0]['quantity']
+        before_quantity = client.get('/api/inventory/', {'search': 'MED0001'}).json()[0]['quantity']
         create_sale_response = client.post(
             '/api/sales/',
             {
@@ -67,7 +67,7 @@ def main():
         )
         expect(create_sale_response.status_code == 201, f'sale creation failed: {create_sale_response.status_code}')
         created_order_no = create_sale_response.json()['order_no']
-        after_quantity = client.get('/api/inventory/', {'search': 'MED001'}).json()[0]['quantity']
+        after_quantity = client.get('/api/inventory/', {'search': 'MED0001'}).json()[0]['quantity']
         expect(after_quantity == before_quantity - 1, 'inventory deduction failed after sale creation')
 
         sales_response = client.get('/api/sales/', {'search': 'Smoke Script Customer'})
@@ -75,7 +75,7 @@ def main():
         expect(any(item['order_no'] == created_order_no for item in sales_response.json()), 'sales search did not include the created order')
 
         print('Smoke check passed.')
-        print(f'MED001 quantity: {before_quantity} -> {after_quantity}')
+        print(f'MED0001 quantity: {before_quantity} -> {after_quantity}')
         print(f'Created order: {created_order_no}')
     finally:
         if created_order_no:
