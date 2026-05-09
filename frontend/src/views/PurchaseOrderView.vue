@@ -40,23 +40,63 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑采购单' : '新增采购单'" width="620px">
+    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑采购单' : '新增采购单'" width="900px">
       <el-form :model="form" label-width="110px">
         <el-form-item label="采购单号"><el-input :model-value="editingId ? form.order_no : nextOrderNo" disabled /></el-form-item>
         <el-form-item label="厂商名称 ⭐️">
-          <el-select v-model="form.manufacturer" style="width: 100%;">
+          <el-select v-model="form.manufacturer" style="width: 100%;" @change="handleManufacturerChange">
             <el-option v-for="item in manufacturers" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="采购人 ⭐️"><el-input v-model="form.purchaser_name" /></el-form-item>
         <el-form-item label="计划到货"><el-date-picker v-model="form.planned_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;" /></el-form-item>
-        <el-form-item label="采购金额 ⭐️"><el-input-number v-model="form.total_amount" :min="0" :precision="2" style="width: 100%;" /></el-form-item>
+        <el-form-item label="采购金额"><el-input :model-value="formatMoney(computedTotal)" disabled /></el-form-item>
         <el-form-item label="采购状态 ⭐️">
           <el-select v-model="form.status" style="width: 100%;">
             <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="采购内容 ⭐️"><el-input v-model="form.item_summary" type="textarea" :rows="3" /></el-form-item>
+        <el-form-item label="采购明细 ⭐️" class="items-form-item">
+          <div class="items-editor">
+            <el-table :data="form.item_details" border>
+              <el-table-column label="药品" min-width="220">
+                <template #default="scope">
+                  <el-select v-model="scope.row.medicine" filterable placeholder="选择药品" style="width: 100%;" @change="syncSelectedMedicine(scope.row)">
+                    <el-option
+                      v-for="medicine in filteredMedicines"
+                      :key="medicine.id"
+                      :label="`${medicine.name} / ${medicine.specification}`"
+                      :value="medicine.id"
+                    />
+                  </el-select>
+                </template>
+              </el-table-column>
+              <el-table-column label="规格" min-width="130">
+                <template #default="scope">{{ scope.row.specification || "-" }}</template>
+              </el-table-column>
+              <el-table-column label="进货价" width="110">
+                <template #default="scope">{{ formatMoney(scope.row.unit_price) }}</template>
+              </el-table-column>
+              <el-table-column label="数量" width="150">
+                <template #default="scope">
+                  <el-input-number v-model="scope.row.quantity" :min="1" :step="1" step-strictly style="width: 120px;" />
+                </template>
+              </el-table-column>
+              <el-table-column label="小计" width="120">
+                <template #default="scope">{{ formatMoney(lineAmount(scope.row)) }}</template>
+              </el-table-column>
+              <el-table-column label="操作" width="80">
+                <template #default="scope">
+                  <el-button link type="danger" @click="removeItem(scope.$index)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <div class="items-actions">
+              <el-button type="primary" plain @click="addItem">添加药品</el-button>
+              <span class="total-text">合计：{{ formatMoney(computedTotal) }}</span>
+            </div>
+          </div>
+        </el-form-item>
         <el-form-item label="备注"><el-input v-model="form.remark" type="textarea" :rows="2" /></el-form-item>
       </el-form>
       <template #footer>
@@ -68,10 +108,10 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 
-import { getManufacturersApi } from "../api/medicines";
+import { getManufacturersApi, getMedicinesApi } from "../api/medicines";
 import {
   createPurchaseOrderApi,
   deletePurchaseOrderApi,
@@ -83,6 +123,7 @@ import {
 const currentUser = JSON.parse(localStorage.getItem("current_user") || "null");
 const orders = ref([]);
 const manufacturers = ref([]);
+const medicines = ref([]);
 const keyword = ref("");
 const statusFilter = ref("");
 const dialogVisible = ref(false);
@@ -100,11 +141,17 @@ const form = reactive({
   manufacturer: null,
   purchaser_name: currentUser?.full_name || "",
   planned_date: "",
-  total_amount: 0,
   status: "pending",
-  item_summary: "",
+  item_details: [],
   remark: "",
 });
+
+const filteredMedicines = computed(() => {
+  if (!form.manufacturer) return medicines.value;
+  return medicines.value.filter((medicine) => medicine.manufacturer === form.manufacturer);
+});
+
+const computedTotal = computed(() => form.item_details.reduce((sum, item) => sum + lineAmount(item), 0));
 
 const resetForm = () => {
   editingId.value = null;
@@ -114,9 +161,8 @@ const resetForm = () => {
     manufacturer: null,
     purchaser_name: currentUser?.full_name || "",
     planned_date: "",
-    total_amount: 0,
     status: "pending",
-    item_summary: "",
+    item_details: [],
     remark: "",
   });
 };
@@ -130,6 +176,8 @@ const formatMoney = (value) => `¥${Number(value || 0).toFixed(2)}`;
 
 const statusTagType = (status) => ({ pending: "warning", ordered: "primary", received: "success", cancelled: "info" }[status] || "info");
 
+const lineAmount = (item) => Number(item.unit_price || 0) * Number(item.quantity || 0);
+
 const loadOrders = async () => {
   const params = {};
   if (keyword.value) params.search = keyword.value;
@@ -139,8 +187,12 @@ const loadOrders = async () => {
 };
 
 const loadManufacturers = async () => {
-  const { data } = await getManufacturersApi();
-  manufacturers.value = data;
+  const [{ data: manufacturerData }, { data: medicineData }] = await Promise.all([
+    getManufacturersApi(),
+    getMedicinesApi(),
+  ]);
+  manufacturers.value = manufacturerData;
+  medicines.value = medicineData;
 };
 
 const resetFilters = () => {
@@ -159,13 +211,20 @@ const openDialog = async (row = null) => {
       manufacturer: row.manufacturer,
       purchaser_name: row.purchaser_name,
       planned_date: row.planned_date,
-      total_amount: Number(row.total_amount),
       status: row.status,
-      item_summary: row.item_summary,
+      item_details: (row.items || []).map((item) => ({
+        medicine: item.medicine,
+        medicine_name: item.medicine_name,
+        specification: item.specification,
+        unit: item.unit,
+        unit_price: Number(item.unit_price),
+        quantity: item.quantity,
+      })),
       remark: row.remark,
     });
   } else {
     await loadNextOrderNo();
+    addItem();
   }
   dialogVisible.value = true;
 };
@@ -175,10 +234,52 @@ const loadNextOrderNo = async () => {
   nextOrderNo.value = data.order_no;
 };
 
+const addItem = () => {
+  form.item_details.push({
+    medicine: null,
+    medicine_name: "",
+    specification: "",
+    unit: "",
+    unit_price: 0,
+    quantity: 1,
+  });
+};
+
+const removeItem = (index) => {
+  form.item_details.splice(index, 1);
+};
+
+const syncSelectedMedicine = (row) => {
+  const medicine = medicines.value.find((item) => item.id === row.medicine);
+  if (!medicine) return;
+  row.medicine_name = medicine.name;
+  row.specification = medicine.specification;
+  row.unit = medicine.unit;
+  row.unit_price = Number(medicine.purchase_price);
+};
+
+const handleManufacturerChange = () => {
+  form.item_details = form.item_details.filter((item) => {
+    const medicine = medicines.value.find((entry) => entry.id === item.medicine);
+    return !medicine || medicine.manufacturer === form.manufacturer;
+  });
+  if (!form.item_details.length) addItem();
+};
+
 const submitForm = async () => {
   try {
-    const payload = { ...form, store: currentUser?.store };
-    delete payload.order_no;
+    const payload = {
+      store: currentUser?.store,
+      manufacturer: form.manufacturer,
+      purchaser_name: form.purchaser_name,
+      planned_date: form.planned_date,
+      status: form.status,
+      remark: form.remark,
+      item_details: form.item_details.map((item) => ({
+        medicine: item.medicine,
+        quantity: item.quantity,
+      })),
+    };
     if (!payload.store) {
       ElMessage.warning("当前账号未关联门店，无法创建采购单。");
       return;
@@ -191,16 +292,12 @@ const submitForm = async () => {
       ElMessage.warning("请填写采购人。");
       return;
     }
-    if (payload.total_amount === null || payload.total_amount === undefined || Number(payload.total_amount) < 0) {
-      ElMessage.warning("请填写不小于 0 的采购金额。");
-      return;
-    }
     if (!payload.status) {
       ElMessage.warning("请选择采购状态。");
       return;
     }
-    if (!payload.item_summary.trim()) {
-      ElMessage.warning("请填写采购内容。");
+    if (!payload.item_details.length || payload.item_details.some((item) => !item.medicine || !item.quantity || item.quantity <= 0)) {
+      ElMessage.warning("请完整填写采购药品和数量。");
       return;
     }
     if (editingId.value) {
@@ -213,7 +310,8 @@ const submitForm = async () => {
     dialogVisible.value = false;
     loadOrders();
   } catch (error) {
-    ElMessage.error(error.response?.data?.detail || "保存采购单失败。");
+    const data = error.response?.data;
+    ElMessage.error(data?.detail || data?.item_details || "保存采购单失败。");
   }
 };
 
@@ -243,5 +341,25 @@ onMounted(() => {
 
 .toolbar-wrap {
   flex-wrap: wrap;
+}
+
+.items-form-item :deep(.el-form-item__content) {
+  display: block;
+}
+
+.items-editor {
+  width: 100%;
+}
+
+.items-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.total-text {
+  font-weight: 700;
+  color: #0f172a;
 }
 </style>

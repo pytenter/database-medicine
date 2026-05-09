@@ -16,7 +16,7 @@ django.setup()
 from django.db import transaction
 from apps.accounts.models import RoleChoices, ShiftSchedule, User
 from apps.announcements.models import Announcement
-from apps.inventory.models import Inventory, PurchaseOrder, PurchaseOrderStatusChoices, Store
+from apps.inventory.models import Inventory, PurchaseOrder, PurchaseOrderItem, PurchaseOrderStatusChoices, Store
 from apps.medicine.models import Manufacturer, Medicine, MedicineCategory
 from apps.sales.models import SaleOrder, SaleOrderItem
 
@@ -146,7 +146,18 @@ def ensure_inventory(store, medicine, quantity, warning_threshold):
     return obj
 
 
-def ensure_purchase_order(order_no, store, manufacturer, purchaser_name, planned_date, total_amount, status, item_summary, remark):
+def ensure_purchase_order(order_no, store, manufacturer, purchaser_name, planned_date, status, remark, item_specs):
+    total_amount = Decimal("0.00")
+    summary_parts = []
+    item_rows = []
+    for medicine, quantity in item_specs:
+        unit_price = medicine.purchase_price
+        amount = unit_price * quantity
+        total_amount += amount
+        summary_parts.append(f"{medicine.name}{quantity}{medicine.unit}")
+        item_rows.append((medicine, quantity, unit_price, amount))
+
+    item_summary = "，".join(summary_parts)
     obj, created = PurchaseOrder.objects.get_or_create(
         order_no=order_no,
         defaults={
@@ -154,7 +165,7 @@ def ensure_purchase_order(order_no, store, manufacturer, purchaser_name, planned
             "manufacturer": manufacturer,
             "purchaser_name": purchaser_name,
             "planned_date": planned_date,
-            "total_amount": Decimal(total_amount),
+            "total_amount": total_amount,
             "status": status,
             "item_summary": item_summary,
             "remark": remark,
@@ -167,7 +178,7 @@ def ensure_purchase_order(order_no, store, manufacturer, purchaser_name, planned
             "manufacturer": manufacturer,
             "purchaser_name": purchaser_name,
             "planned_date": planned_date,
-            "total_amount": Decimal(total_amount),
+            "total_amount": total_amount,
             "status": status,
             "item_summary": item_summary,
             "remark": remark,
@@ -177,6 +188,19 @@ def ensure_purchase_order(order_no, store, manufacturer, purchaser_name, planned
                 changed = True
         if changed:
             obj.save()
+    obj.items.all().delete()
+    PurchaseOrderItem.objects.bulk_create(
+        [
+            PurchaseOrderItem(
+                order=obj,
+                medicine=medicine,
+                quantity=quantity,
+                unit_price=unit_price,
+                amount=amount,
+            )
+            for medicine, quantity, unit_price, amount in item_rows
+        ]
+    )
     return obj
 
 
@@ -346,16 +370,16 @@ with transaction.atomic():
 
     pharmacy_admins = {user.store_id: user for user in User.objects.filter(role=RoleChoices.PHARMACY_ADMIN).order_by("id") if user.store_id and user.store_id not in []}
     purchase_specs = [
-        ("PO202604030001", "ST001", C(r"\u5e7f\u5dde\u533b\u836f\u96c6\u56e2"), C(r"\u95e8\u5e97\u6625\u5b63\u8865\u8d27\u8ba1\u5212"), PurchaseOrderStatusChoices.ORDERED, "1380.00", 3, C(r"\u611f\u5192\u836f\u3001\u9000\u70e7\u836f\u8865\u8d27")),
-        ("PO202604030002", "ST002", C(r"\u6676\u76db\u836f\u4e1a\u516c\u53f8"), C(r"\u4e1c\u533a\u95e8\u5e97\u5468\u5ea6\u91c7\u8d2d"), PurchaseOrderStatusChoices.PENDING, "920.00", 5, C(r"\u54b3\u55fd\u7c7b\u548c\u80a0\u80c3\u7528\u836f\u8865\u8d27")),
-        ("PO202604030003", "ST003", C(r"\u767e\u6c47\u5eb7\u590d\u836f\u4e1a"), C(r"\u5357\u7ad9\u95e8\u5e97\u6708\u4e2d\u91c7\u8d2d"), PurchaseOrderStatusChoices.RECEIVED, "1560.00", 2, C(r"\u6162\u75c5\u836f\u548c\u513f\u79d1\u7528\u836f\u5230\u8d27")),
-        ("PO202604030004", "ST004", C(r"\u5eb7\u5065\u751f\u7269\u6709\u9650\u516c\u53f8"), C(r"\u897f\u533a\u95e8\u5e97\u5047\u65e5\u5907\u8d27"), PurchaseOrderStatusChoices.ORDERED, "1040.00", 4, C(r"\u611f\u5192\u836f\u548c\u4e2d\u6210\u836f\u589e\u8865")),
-        ("PO202604030005", "ST005", C(r"\u4e1c\u5357\u767d\u836f"), C(r"\u5317\u57ce\u95e8\u5e97\u4f1a\u5458\u65e5\u5907\u8d27"), PurchaseOrderStatusChoices.PENDING, "1188.00", 6, C(r"\u5fc3\u8840\u7ba1\u548c\u80a0\u80c3\u7528\u836f\u8865\u8d27")),
-        ("PO202604030006", "ST006", C(r"\u5cad\u5357\u4e2d\u836f\u5382"), C(r"\u5927\u5b66\u57ce\u95e8\u5e97\u5468\u672b\u5907\u8d27"), PurchaseOrderStatusChoices.ORDERED, "980.00", 3, C(r"\u513f\u79d1\u7528\u836f\u4e0e\u547c\u5438\u7528\u836f\u91c7\u8d2d")),
-        ("PO202604030007", "ST001", C(r"\u534e\u5317\u5236\u836f\u4f9b\u5e94\u94fe"), C(r"\u5e02\u4e2d\u5fc3\u95e8\u5e97\u6162\u75c5\u836f\u8865\u8d27"), PurchaseOrderStatusChoices.PENDING, "1420.00", 7, C(r"\u9ad8\u8840\u538b\u3001\u7cd6\u5c3f\u75c5\u836f\u54c1\u91c7\u8d2d")),
-        ("PO202604030008", "ST002", C(r"\u5b89\u548c\u5065\u5eb7\u836f\u4e1a"), C(r"\u4e1c\u533a\u95e8\u5e97\u5916\u7528\u836f\u5907\u8d27"), PurchaseOrderStatusChoices.RECEIVED, "760.00", 1, C(r"\u5916\u7528\u836f\u53ca\u6d88\u6bd2\u7528\u54c1\u5230\u8d27")),
+        ("PO202604030001", "ST001", C(r"\u5e7f\u5dde\u533b\u836f\u96c6\u56e2"), C(r"\u95e8\u5e97\u6625\u5b63\u8865\u8d27\u8ba1\u5212"), PurchaseOrderStatusChoices.ORDERED, 3, [("MED0001", 42), ("MED0004", 24)]),
+        ("PO202604030002", "ST002", C(r"\u6676\u76db\u836f\u4e1a\u516c\u53f8"), C(r"\u4e1c\u533a\u95e8\u5e97\u5468\u5ea6\u91c7\u8d2d"), PurchaseOrderStatusChoices.PENDING, 5, [("MED0026", 36), ("MED0018", 18)]),
+        ("PO202604030003", "ST003", C(r"\u767e\u6c47\u5eb7\u590d\u836f\u4e1a"), C(r"\u5357\u7ad9\u95e8\u5e97\u6708\u4e2d\u91c7\u8d2d"), PurchaseOrderStatusChoices.RECEIVED, 2, [("MED0022", 48), ("MED0027", 30)]),
+        ("PO202604030004", "ST004", C(r"\u5eb7\u5065\u751f\u7269\u6709\u9650\u516c\u53f8"), C(r"\u897f\u533a\u95e8\u5e97\u5047\u65e5\u5907\u8d27"), PurchaseOrderStatusChoices.ORDERED, 4, [("MED0019", 40), ("MED0024", 28)]),
+        ("PO202604030005", "ST005", C(r"\u4e1c\u5357\u767d\u836f"), C(r"\u5317\u57ce\u95e8\u5e97\u4f1a\u5458\u65e5\u5907\u8d27"), PurchaseOrderStatusChoices.PENDING, 6, [("MED0023", 60)]),
+        ("PO202604030006", "ST006", C(r"\u5cad\u5357\u4e2d\u836f\u5382"), C(r"\u5927\u5b66\u57ce\u95e8\u5e97\u5468\u672b\u5907\u8d27"), PurchaseOrderStatusChoices.ORDERED, 3, [("MED0020", 45), ("MED0016", 18)]),
+        ("PO202604030007", "ST001", C(r"\u534e\u5317\u5236\u836f\u4f9b\u5e94\u94fe"), C(r"\u5e02\u4e2d\u5fc3\u95e8\u5e97\u6162\u75c5\u836f\u8865\u8d27"), PurchaseOrderStatusChoices.PENDING, 7, [("MED0017", 52)]),
+        ("PO202604030008", "ST002", C(r"\u5b89\u548c\u5065\u5eb7\u836f\u4e1a"), C(r"\u4e1c\u533a\u95e8\u5e97\u5916\u7528\u836f\u5907\u8d27"), PurchaseOrderStatusChoices.RECEIVED, 1, [("MED0025", 40), ("MED0007", 18)]),
     ]
-    for order_no, store_code, manufacturer_name, remark, status, total_amount, days_offset, summary in purchase_specs:
+    for order_no, store_code, manufacturer_name, remark, status, days_offset, item_codes in purchase_specs:
         store = stores[store_code]
         admin = User.objects.filter(role=RoleChoices.PHARMACY_ADMIN, store=store).order_by("id").first()
         ensure_purchase_order(
@@ -364,10 +388,9 @@ with transaction.atomic():
             manufacturer_map[manufacturer_name],
             admin.full_name if admin else C(r"\u95e8\u5e97\u7ba1\u7406\u5458"),
             date.today() + timedelta(days=days_offset),
-            total_amount,
             status,
-            summary,
             remark,
+            [(medicine_map[code], quantity) for code, quantity in item_codes],
         )
 
     shift_note_cycle = [

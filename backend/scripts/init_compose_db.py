@@ -14,6 +14,7 @@ REQUIRED_TABLES = {
     "medicine",
     "inventory",
     "purchase_order",
+    "purchase_order_item",
     "shift_schedule",
     "sale_order",
     "sale_order_item",
@@ -124,4 +125,3 @@ if __name__ == "__main__":
     wait_for_database()
     ensure_database_exists()
     initialize_database_if_needed()
-

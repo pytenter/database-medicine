@@ -75,7 +75,12 @@ class PurchaseOrderViewSet(viewsets.ModelViewSet):
     ordering_fields = ["id", "planned_date", "total_amount", "updated_at"]
 
     def get_queryset(self):
-        queryset = PurchaseOrder.objects.select_related("store", "manufacturer").all().order_by("-id")
+        queryset = (
+            PurchaseOrder.objects.select_related("store", "manufacturer")
+            .prefetch_related("items", "items__medicine")
+            .all()
+            .order_by("-id")
+        )
         user = self.request.user
         if user.store_id:
             queryset = queryset.filter(store_id=user.store_id)

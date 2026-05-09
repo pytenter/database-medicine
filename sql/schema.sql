@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS operation_log CASCADE;
 DROP TABLE IF EXISTS sale_order_item CASCADE;
 DROP TABLE IF EXISTS sale_order CASCADE;
 DROP TABLE IF EXISTS shift_schedule CASCADE;
+DROP TABLE IF EXISTS purchase_order_item CASCADE;
 DROP TABLE IF EXISTS purchase_order CASCADE;
 DROP TABLE IF EXISTS announcement CASCADE;
 DROP TABLE IF EXISTS inventory CASCADE;
@@ -131,6 +132,22 @@ CREATE TABLE purchase_order (
     CONSTRAINT fk_purchase_order_manufacturer FOREIGN KEY (manufacturer_id) REFERENCES manufacturer(id) ON DELETE RESTRICT
 );
 
+CREATE TABLE purchase_order_item (
+    id SERIAL PRIMARY KEY,
+    order_id INTEGER NOT NULL,
+    medicine_id INTEGER NOT NULL,
+    quantity INTEGER NOT NULL,
+    unit_price NUMERIC(10, 2) NOT NULL,
+    amount NUMERIC(12, 2) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT ck_purchase_order_item_quantity CHECK (quantity > 0),
+    CONSTRAINT ck_purchase_order_item_unit_price CHECK (unit_price > 0),
+    CONSTRAINT ck_purchase_order_item_amount CHECK (amount > 0),
+    CONSTRAINT fk_purchase_order_item_order FOREIGN KEY (order_id) REFERENCES purchase_order(id) ON DELETE CASCADE,
+    CONSTRAINT fk_purchase_order_item_medicine FOREIGN KEY (medicine_id) REFERENCES medicine(id) ON DELETE RESTRICT
+);
+
 CREATE TABLE shift_schedule (
     id SERIAL PRIMARY KEY,
     store_id INTEGER NOT NULL,
@@ -199,6 +216,8 @@ CREATE INDEX idx_inventory_medicine ON inventory(medicine_id);
 CREATE INDEX idx_purchase_order_store ON purchase_order(store_id);
 CREATE INDEX idx_purchase_order_manufacturer ON purchase_order(manufacturer_id);
 CREATE INDEX idx_purchase_order_status ON purchase_order(status);
+CREATE INDEX idx_purchase_order_item_order ON purchase_order_item(order_id);
+CREATE INDEX idx_purchase_order_item_medicine ON purchase_order_item(medicine_id);
 CREATE INDEX idx_shift_schedule_store ON shift_schedule(store_id);
 CREATE INDEX idx_shift_schedule_salesperson ON shift_schedule(salesperson_id);
 CREATE INDEX idx_shift_schedule_date ON shift_schedule(shift_date);
@@ -261,6 +280,9 @@ CREATE TRIGGER trg_inventory_updated_at BEFORE UPDATE ON inventory
 FOR EACH ROW EXECUTE PROCEDURE fn_set_updated_at();
 
 CREATE TRIGGER trg_purchase_order_updated_at BEFORE UPDATE ON purchase_order
+FOR EACH ROW EXECUTE PROCEDURE fn_set_updated_at();
+
+CREATE TRIGGER trg_purchase_order_item_updated_at BEFORE UPDATE ON purchase_order_item
 FOR EACH ROW EXECUTE PROCEDURE fn_set_updated_at();
 
 CREATE TRIGGER trg_shift_schedule_updated_at BEFORE UPDATE ON shift_schedule

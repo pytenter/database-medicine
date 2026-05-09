@@ -64,3 +64,18 @@ class PurchaseOrder(TimeStampedModel):
 
     def __str__(self):
         return self.order_no
+
+
+class PurchaseOrderItem(TimeStampedModel):
+    order = models.ForeignKey(PurchaseOrder, on_delete=models.CASCADE, related_name="items")
+    medicine = models.ForeignKey("medicine.Medicine", on_delete=models.PROTECT, related_name="purchase_items")
+    quantity = models.IntegerField(verbose_name="Quantity")
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Purchase Unit Price")
+    amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Amount")
+
+    class Meta:
+        db_table = "purchase_order_item"
+        ordering = ["id"]
+
+    def __str__(self):
+        return f"{self.order.order_no} - {self.medicine.name}"
