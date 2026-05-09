@@ -162,11 +162,28 @@ const handleLogout = () => {
   color: rgba(248, 250, 252, 0.9);
   border-radius: 12px;
   margin-bottom: 8px;
+  transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.side-menu :deep(.el-menu-item:hover),
+.side-menu :deep(.el-menu-item:focus) {
+  background: rgba(20, 184, 166, 0.24);
+  color: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(209, 250, 229, 0.22);
 }
 
 .side-menu :deep(.el-menu-item.is-active) {
-  background: rgba(16, 185, 129, 0.16);
-  color: #d1fae5;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.36), rgba(14, 165, 233, 0.2));
+  color: #ffffff;
+  box-shadow:
+    inset 0 0 0 1px rgba(209, 250, 229, 0.28),
+    0 12px 24px rgba(15, 23, 42, 0.18);
+}
+
+.side-menu :deep(.el-menu-item.is-active:hover),
+.side-menu :deep(.el-menu-item.is-active:focus) {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.44), rgba(14, 165, 233, 0.26));
+  color: #ffffff;
 }
 
 .aside-footer {
