@@ -37,7 +37,7 @@
 
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑药品' : '新增药品'" width="680px">
       <el-form :model="form" label-width="140px">
-        <el-form-item label="药品编码"><el-input :model-value="editingId ? form.code : '系统自动生成'" disabled /></el-form-item>
+        <el-form-item label="药品编码"><el-input :model-value="editingId ? form.code : nextMedicineCode" disabled /></el-form-item>
         <el-form-item label="药品名称 ⭐️"><el-input v-model="form.name" /></el-form-item>
         <el-form-item label="规格 ⭐️"><el-input v-model="form.specification" /></el-form-item>
         <el-form-item label="单位 ⭐️"><el-input v-model="form.unit" /></el-form-item>
@@ -79,7 +79,6 @@
     <el-dialog v-model="categoryDialog" title="新增分类" width="500px">
       <el-form :model="categoryForm" label-width="140px">
         <el-form-item label="分类名称 ⭐️"><el-input v-model="categoryForm.name" /></el-form-item>
-        <el-form-item label="分类说明"><el-input v-model="categoryForm.description" type="textarea" /></el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="categoryDialog = false">取消</el-button>
@@ -101,6 +100,7 @@ import {
   getCategoriesApi,
   getManufacturersApi,
   getMedicinesApi,
+  getNextMedicineCodeApi,
   updateMedicineApi,
 } from "../api/medicines";
 
@@ -114,6 +114,7 @@ const dialogVisible = ref(false);
 const manufacturerDialog = ref(false);
 const categoryDialog = ref(false);
 const editingId = ref(null);
+const nextMedicineCode = ref("");
 const form = reactive({
   code: "",
   name: "",
@@ -129,7 +130,7 @@ const form = reactive({
   is_active: true,
 });
 const manufacturerForm = reactive({ name: "", contact_person: "", contact_phone: "" });
-const categoryForm = reactive({ name: "", description: "" });
+const categoryForm = reactive({ name: "" });
 
 const resetForm = () => {
   editingId.value = null;
@@ -177,14 +178,21 @@ const loadBaseData = async () => {
   categories.value = categoriesData;
 };
 
-const openDialog = (row = null) => {
+const openDialog = async (row = null) => {
   resetForm();
   if (row) {
     ensureManufacturerOption(row);
     editingId.value = row.id;
     Object.assign(form, { ...row });
+  } else {
+    await loadNextMedicineCode();
   }
   dialogVisible.value = true;
+};
+
+const loadNextMedicineCode = async () => {
+  const { data } = await getNextMedicineCodeApi();
+  nextMedicineCode.value = data.code;
 };
 
 const submitForm = async () => {
@@ -276,7 +284,7 @@ const submitCategory = async () => {
     await createCategoryApi(categoryForm);
     ElMessage.success("分类创建成功。");
     categoryDialog.value = false;
-    Object.assign(categoryForm, { name: "", description: "" });
+    Object.assign(categoryForm, { name: "" });
     loadBaseData();
   } catch (error) {
     ElMessage.error(error.response?.data?.detail || "保存分类失败。");

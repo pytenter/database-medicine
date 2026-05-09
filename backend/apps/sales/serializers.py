@@ -9,7 +9,6 @@ from apps.inventory.models import Inventory
 from apps.sales.models import (
     SaleOrder,
     SaleOrderItem,
-    SaleOrderStatusChoices,
 )
 
 
@@ -43,7 +42,6 @@ class SaleOrderSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializ
     store_address = serializers.CharField(source="store.address", read_only=True)
     store_phone = serializers.CharField(source="store.phone", read_only=True)
     salesperson_name = serializers.CharField(source="salesperson.full_name", read_only=True)
-    order_status_label = serializers.CharField(source="get_order_status_display", read_only=True)
 
     class Meta:
         model = SaleOrder
@@ -58,8 +56,6 @@ class SaleOrderSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializ
             "salesperson_name",
             "customer_name",
             "customer_phone",
-            "order_status",
-            "order_status_label",
             "total_amount",
             "remark",
             "items",
@@ -105,7 +101,6 @@ class SaleCreateSerializer(serializers.Serializer):
             salesperson=user,
             customer_name=validated_data.get("customer_name", ""),
             customer_phone=validated_data.get("customer_phone", ""),
-            order_status=SaleOrderStatusChoices.ORDERED,
             remark=validated_data.get("remark", ""),
             total_amount=Decimal("0.00"),
         )

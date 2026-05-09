@@ -1,8 +1,10 @@
 ﻿from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from apps.accounts.permissions import IsPharmacyAdmin, IsSystemAdmin
+from apps.common.numbering import next_daily_code
 from apps.inventory.models import Inventory, PurchaseOrder, Store
 from apps.inventory.serializers import InventorySerializer, PurchaseOrderSerializer, StoreSerializer
 
@@ -83,6 +85,10 @@ class PurchaseOrderViewSet(viewsets.ModelViewSet):
         if status_value:
             queryset = queryset.filter(status=status_value)
         return queryset
+
+    @action(detail=False, methods=["get"], url_path="next-code")
+    def next_code(self, request):
+        return Response({"order_no": next_daily_code(PurchaseOrder, "order_no", "PO")})
 
     def _validate_store_scope(self, store_id):
         user = self.request.user

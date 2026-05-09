@@ -156,13 +156,11 @@ CREATE TABLE sale_order (
     salesperson_id INTEGER NOT NULL,
     customer_name VARCHAR(100) NOT NULL DEFAULT '',
     customer_phone VARCHAR(20) NOT NULL DEFAULT '',
-    order_status VARCHAR(20) NOT NULL DEFAULT 'ordered',
     total_amount NUMERIC(12, 2) NOT NULL DEFAULT 0,
     remark VARCHAR(255) NOT NULL DEFAULT '',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT ck_sale_order_total_amount CHECK (total_amount >= 0),
-    CONSTRAINT ck_sale_order_status CHECK (order_status IN ('pending_payment', 'ordered', 'delivering', 'completed')),
     CONSTRAINT fk_sale_order_store FOREIGN KEY (store_id) REFERENCES store(id),
     CONSTRAINT fk_sale_order_salesperson FOREIGN KEY (salesperson_id) REFERENCES sys_user(id)
 );
@@ -205,7 +203,6 @@ CREATE INDEX idx_shift_schedule_store ON shift_schedule(store_id);
 CREATE INDEX idx_shift_schedule_salesperson ON shift_schedule(salesperson_id);
 CREATE INDEX idx_shift_schedule_date ON shift_schedule(shift_date);
 CREATE INDEX idx_sale_order_created_at ON sale_order(created_at);
-CREATE INDEX idx_sale_order_status ON sale_order(order_status);
 CREATE OR REPLACE VIEW v_medicine_stock AS
 SELECT
     s.id AS store_id,

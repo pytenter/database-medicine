@@ -18,7 +18,7 @@ from apps.accounts.models import RoleChoices, ShiftSchedule, User
 from apps.announcements.models import Announcement
 from apps.inventory.models import Inventory, PurchaseOrder, PurchaseOrderStatusChoices, Store
 from apps.medicine.models import Manufacturer, Medicine, MedicineCategory
-from apps.sales.models import SaleOrder, SaleOrderItem, SaleOrderStatusChoices
+from apps.sales.models import SaleOrder, SaleOrderItem
 
 
 def C(value: str) -> str:
@@ -223,11 +223,6 @@ def seed_orders(salespeople, medicine_map):
         C(r"\u6731\u5973\u58eb"),
         C(r"\u9648\u5148\u751f"),
     ]
-    order_statuses = [
-        SaleOrderStatusChoices.PENDING_PAYMENT,
-        SaleOrderStatusChoices.ORDERED,
-        SaleOrderStatusChoices.COMPLETED,
-    ]
     medicine_keys = list(medicine_map.keys())
     order_index = 300
     for idx, salesperson in enumerate(salespeople):
@@ -236,7 +231,6 @@ def seed_orders(salespeople, medicine_map):
             order_index += 1
             if SaleOrder.objects.filter(order_no=order_no).exists():
                 continue
-            status = order_statuses[(idx + offset) % len(order_statuses)]
             customer_name = customer_names[(idx * 2 + offset) % len(customer_names)]
             phone = f"1390000{order_index:04d}"[-11:]
             med_a = medicine_map[medicine_keys[(idx + offset) % len(medicine_keys)]]
@@ -250,7 +244,6 @@ def seed_orders(salespeople, medicine_map):
                 salesperson=salesperson,
                 customer_name=customer_name,
                 customer_phone=phone,
-                order_status=status,
                 total_amount=total_amount,
                 remark=C(r"\u6f14\u793a\u9500\u552e\u8ba2\u5355\u6570\u636e"),
             )

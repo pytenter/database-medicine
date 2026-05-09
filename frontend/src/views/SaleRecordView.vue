@@ -6,9 +6,6 @@
       </div>
       <div class="toolbar-actions wrap-actions">
         <el-input v-model="keyword" placeholder="按订单编号、客户或电话搜索" clearable style="width: 260px;" @keyup.enter="loadSales" />
-        <el-select v-model="statusFilter" clearable placeholder="订单状态" style="width: 140px;">
-          <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
-        </el-select>
         <el-button @click="loadSales">查询</el-button>
         <el-button @click="resetFilters">重置</el-button>
         <el-button v-if="canCreateOrder" type="primary" @click="goCreate">新增订单</el-button>
@@ -20,11 +17,6 @@
       <el-table-column prop="customer_name" label="客户名称" min-width="120" />
       <el-table-column prop="customer_phone" label="联系电话" min-width="130" />
       <el-table-column prop="store_name" label="所属门店" min-width="140" />
-      <el-table-column prop="order_status_label" label="订单状态" width="120">
-        <template #default="scope">
-          <el-tag :type="statusTagType(scope.row.order_status)">{{ scope.row.order_status_label }}</el-tag>
-        </template>
-      </el-table-column>
       <el-table-column prop="total_amount" label="订单金额" width="120">
         <template #default="scope">{{ formatMoney(scope.row.total_amount) }}</template>
       </el-table-column>
@@ -40,23 +32,16 @@
 
     <el-dialog v-model="detailVisible" title="订单详情" width="1120px" destroy-on-close>
       <template v-if="currentOrder">
-        <el-steps :active="statusIndex(currentOrder.order_status)" finish-status="success" align-center class="order-steps">
-          <el-step title="待付款" />
-          <el-step title="已下单" />
-          <el-step title="处理中" />
-          <el-step title="已完成" />
-        </el-steps>
-
         <div class="detail-grid">
           <section class="detail-card">
             <div class="detail-title">基础信息</div>
             <el-descriptions :column="3" border>
-              <el-descriptions-item label="工单编号">{{ currentOrder.order_no }}</el-descriptions-item>
+              <el-descriptions-item label="订单编号">{{ currentOrder.order_no }}</el-descriptions-item>
               <el-descriptions-item label="客户名称">{{ currentOrder.customer_name || '-' }}</el-descriptions-item>
               <el-descriptions-item label="联系方式">{{ currentOrder.customer_phone || '-' }}</el-descriptions-item>
-              <el-descriptions-item label="当前状态">{{ currentOrder.order_status_label }}</el-descriptions-item>
               <el-descriptions-item label="订单金额">{{ formatMoney(currentOrder.total_amount) }}</el-descriptions-item>
               <el-descriptions-item label="下单时间">{{ formatDateTime(currentOrder.created_at) }}</el-descriptions-item>
+              <el-descriptions-item label="销售人员">{{ currentOrder.salesperson_name || '-' }}</el-descriptions-item>
             </el-descriptions>
           </section>
 
@@ -84,7 +69,6 @@
             </el-table-column>
           </el-table>
         </section>
-
       </template>
     </el-dialog>
   </div>
@@ -101,37 +85,25 @@ const router = useRouter();
 const auth = useAuthStore();
 const sales = ref([]);
 const keyword = ref("");
-const statusFilter = ref("");
 const detailVisible = ref(false);
 const currentOrder = ref(null);
 const canCreateOrder = computed(() => auth.role === "salesperson");
-
-const statusOptions = [
-  { label: "待付款", value: "pending_payment" },
-  { label: "已下单", value: "ordered" },
-  { label: "处理中", value: "delivering" },
-  { label: "已完成", value: "completed" },
-];
 
 const formatDateTime = (value) => {
   if (!value) return "-";
   return value.replace("T", " ").slice(0, 16);
 };
-const formatMoney = (value) => `￥${Number(value || 0).toFixed(2)}`;
-const statusTagType = (status) => ({ pending_payment: "warning", ordered: "info", delivering: "primary", completed: "success" }[status] || "info");
-const statusIndex = (status) => ({ pending_payment: 0, ordered: 1, delivering: 2, completed: 3 }[status] ?? 1);
+const formatMoney = (value) => `¥${Number(value || 0).toFixed(2)}`;
 
 const loadSales = async () => {
   const params = {};
   if (keyword.value) params.search = keyword.value;
-  if (statusFilter.value) params.status = statusFilter.value;
   const { data } = await getSalesApi(params);
   sales.value = data;
 };
 
 const resetFilters = () => {
   keyword.value = "";
-  statusFilter.value = "";
   loadSales();
 };
 
@@ -162,10 +134,6 @@ onMounted(loadSales);
   gap: 10px;
 }
 
-.order-steps {
-  margin-bottom: 20px;
-}
-
 .detail-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -177,7 +145,7 @@ onMounted(loadSales);
   margin-bottom: 16px;
   padding: 16px;
   border: 1px solid #d8e3f0;
-  border-radius: 18px;
+  border-radius: 8px;
   background: #fbfdff;
 }
 

@@ -3,25 +3,12 @@ from django.db import models
 from apps.common.models import TimeStampedModel
 
 
-class SaleOrderStatusChoices(models.TextChoices):
-    PENDING_PAYMENT = "pending_payment", "待付款"
-    ORDERED = "ordered", "已下单"
-    DELIVERING = "delivering", "处理中"
-    COMPLETED = "completed", "已完成"
-
-
 class SaleOrder(TimeStampedModel):
     order_no = models.CharField(max_length=32, unique=True, verbose_name="订单编号")
     store = models.ForeignKey("inventory.Store", on_delete=models.PROTECT, related_name="sales")
     salesperson = models.ForeignKey("accounts.User", on_delete=models.PROTECT, related_name="sales")
     customer_name = models.CharField(max_length=100, blank=True, verbose_name="客户名称")
     customer_phone = models.CharField(max_length=20, blank=True, verbose_name="联系电话")
-    order_status = models.CharField(
-        max_length=20,
-        choices=SaleOrderStatusChoices.choices,
-        default=SaleOrderStatusChoices.ORDERED,
-        verbose_name="订单状态",
-    )
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="订单金额")
     remark = models.CharField(max_length=255, blank=True, verbose_name="备注")
 

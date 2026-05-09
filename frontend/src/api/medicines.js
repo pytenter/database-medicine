@@ -1,6 +1,7 @@
 import http from "./http";
 
 export const getMedicinesApi = (params) => http.get("/medicines/", { params });
+export const getNextMedicineCodeApi = () => http.get("/medicines/next-code/");
 export const createMedicineApi = (payload) => http.post("/medicines/", payload);
 export const updateMedicineApi = (id, payload) => http.put(`/medicines/${id}/`, payload);
 export const deleteMedicineApi = (id) => http.delete(`/medicines/${id}/`);

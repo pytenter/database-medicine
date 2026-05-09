@@ -1,7 +1,9 @@
 ﻿from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.accounts.permissions import IsPharmacyAdmin
+from apps.common.numbering import next_prefixed_sequence_code
 from apps.medicine.models import Manufacturer, Medicine, MedicineCategory
 from apps.medicine.serializers import ManufacturerSerializer, MedicineCategorySerializer, MedicineSerializer
 
@@ -52,6 +54,10 @@ class MedicineViewSet(viewsets.ModelViewSet):
             .filter(is_active=True)
             .order_by("id")
         )
+
+    @action(detail=False, methods=["get"], url_path="next-code")
+    def next_code(self, request):
+        return Response({"code": next_prefixed_sequence_code(Medicine, "code", "MED")})
 
     def destroy(self, request, *args, **kwargs):
         medicine = self.get_object()

@@ -42,7 +42,7 @@
 
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑采购单' : '新增采购单'" width="620px">
       <el-form :model="form" label-width="110px">
-        <el-form-item label="采购单号"><el-input :model-value="editingId ? form.order_no : '系统自动生成'" disabled /></el-form-item>
+        <el-form-item label="采购单号"><el-input :model-value="editingId ? form.order_no : nextOrderNo" disabled /></el-form-item>
         <el-form-item label="厂商名称 ⭐️">
           <el-select v-model="form.manufacturer" style="width: 100%;">
             <el-option v-for="item in manufacturers" :key="item.id" :label="item.name" :value="item.id" />
@@ -75,6 +75,7 @@ import { getManufacturersApi } from "../api/medicines";
 import {
   createPurchaseOrderApi,
   deletePurchaseOrderApi,
+  getNextPurchaseOrderNoApi,
   getPurchaseOrdersApi,
   updatePurchaseOrderApi,
 } from "../api/inventory";
@@ -86,6 +87,7 @@ const keyword = ref("");
 const statusFilter = ref("");
 const dialogVisible = ref(false);
 const editingId = ref(null);
+const nextOrderNo = ref("");
 const statusOptions = [
   { value: "pending", label: "待采购" },
   { value: "ordered", label: "已下单" },
@@ -147,7 +149,7 @@ const resetFilters = () => {
   loadOrders();
 };
 
-const openDialog = (row = null) => {
+const openDialog = async (row = null) => {
   resetForm();
   if (row) {
     editingId.value = row.id;
@@ -162,8 +164,15 @@ const openDialog = (row = null) => {
       item_summary: row.item_summary,
       remark: row.remark,
     });
+  } else {
+    await loadNextOrderNo();
   }
   dialogVisible.value = true;
+};
+
+const loadNextOrderNo = async () => {
+  const { data } = await getNextPurchaseOrderNoApi();
+  nextOrderNo.value = data.order_no;
 };
 
 const submitForm = async () => {

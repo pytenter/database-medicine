@@ -35,7 +35,6 @@ class SaleOrderViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(store_id=user.store_id)
 
         search = self.request.query_params.get("search")
-        status_value = self.request.query_params.get("status")
         if search:
             queryset = queryset.filter(
                 Q(order_no__icontains=search)
@@ -43,8 +42,6 @@ class SaleOrderViewSet(viewsets.ModelViewSet):
                 | Q(customer_phone__icontains=search)
                 | Q(store__name__icontains=search)
             )
-        if status_value:
-            queryset = queryset.filter(order_status=status_value)
         return queryset.distinct().order_by("-id")
 
     def get_serializer_class(self):
