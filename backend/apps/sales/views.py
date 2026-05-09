@@ -1,14 +1,9 @@
-﻿from django.db.models import Q
+from django.db.models import Q
 from rest_framework import permissions, status, viewsets
-from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.sales.models import SaleOrder
 from apps.sales.serializers import (
-    LogisticsUpdateSerializer,
-    OrderLogisticsSerializer,
-    OrderReviewSerializer,
-    ReviewSubmitSerializer,
     SaleCreateSerializer,
     SaleOrderSerializer,
 )
@@ -28,8 +23,6 @@ class SaleOrderViewSet(viewsets.ModelViewSet):
         "items",
         "items__medicine",
         "items__medicine__manufacturer",
-        "logistics",
-        "review",
     )
     permission_classes = [SalesPermission]
     search_fields = ["order_no", "customer_name", "customer_phone", "salesperson__full_name", "store__name"]
@@ -64,19 +57,3 @@ class SaleOrderViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
         return Response(SaleOrderSerializer(order).data, status=status.HTTP_201_CREATED)
-
-    @action(detail=True, methods=["post"], url_path="logistics")
-    def add_logistics(self, request, pk=None):
-        order = self.get_object()
-        serializer = LogisticsUpdateSerializer(data=request.data, context={"request": request, "order": order})
-        serializer.is_valid(raise_exception=True)
-        logistics = serializer.save()
-        return Response(OrderLogisticsSerializer(logistics).data, status=status.HTTP_201_CREATED)
-
-    @action(detail=True, methods=["post"], url_path="review")
-    def submit_review(self, request, pk=None):
-        order = self.get_object()
-        serializer = ReviewSubmitSerializer(data=request.data, context={"request": request, "order": order})
-        serializer.is_valid(raise_exception=True)
-        review = serializer.save()
-        return Response(OrderReviewSerializer(review).data, status=status.HTTP_201_CREATED)

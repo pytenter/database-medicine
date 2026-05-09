@@ -4,7 +4,6 @@
       <div>
         <span class="hero-tag">营业分析</span>
         <h3>各药店营业额对比</h3>
-        <p>根据历史销售订单自动汇总各门店的营业额、订单量和经营情况。</p>
       </div>
       <div class="hero-stats">
         <article>
@@ -27,7 +26,6 @@
         <div class="panel-head">
           <div>
             <h4>门店营业额排行</h4>
-            <p>按营业额从高到低展示各门店的经营情况。</p>
           </div>
         </div>
         <div class="bars-wrap">
@@ -48,7 +46,6 @@
         <div class="panel-head">
           <div>
             <h4>详细数据</h4>
-            <p>查看各门店的负责人、地址、订单量和营业额。</p>
           </div>
         </div>
         <el-table :data="compareRows" border>

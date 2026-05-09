@@ -1,6 +1,4 @@
 DROP TABLE IF EXISTS operation_log CASCADE;
-DROP TABLE IF EXISTS order_review CASCADE;
-DROP TABLE IF EXISTS order_logistics CASCADE;
 DROP TABLE IF EXISTS sale_order_item CASCADE;
 DROP TABLE IF EXISTS sale_order CASCADE;
 DROP TABLE IF EXISTS shift_schedule CASCADE;
@@ -185,30 +183,6 @@ CREATE TABLE sale_order_item (
     CONSTRAINT fk_sale_order_item_medicine FOREIGN KEY (medicine_id) REFERENCES medicine(id)
 );
 
-CREATE TABLE order_logistics (
-    id SERIAL PRIMARY KEY,
-    order_id INTEGER NOT NULL,
-    content VARCHAR(255) NOT NULL,
-    operator_name VARCHAR(100) NOT NULL DEFAULT '',
-    status_after VARCHAR(20) NOT NULL DEFAULT '',
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_order_logistics_order FOREIGN KEY (order_id) REFERENCES sale_order(id) ON DELETE CASCADE,
-    CONSTRAINT ck_order_logistics_status_after CHECK (status_after IN ('', 'pending_payment', 'ordered', 'delivering', 'completed'))
-);
-
-CREATE TABLE order_review (
-    id SERIAL PRIMARY KEY,
-    order_id INTEGER NOT NULL UNIQUE,
-    rating SMALLINT NOT NULL DEFAULT 5,
-    content VARCHAR(255) NOT NULL DEFAULT '',
-    reviewer_name VARCHAR(100) NOT NULL DEFAULT '',
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT ck_order_review_rating CHECK (rating BETWEEN 1 AND 5),
-    CONSTRAINT fk_order_review_order FOREIGN KEY (order_id) REFERENCES sale_order(id) ON DELETE CASCADE
-);
-
 CREATE TABLE operation_log (
     id SERIAL PRIMARY KEY,
     operator_id INTEGER,
@@ -232,9 +206,6 @@ CREATE INDEX idx_shift_schedule_salesperson ON shift_schedule(salesperson_id);
 CREATE INDEX idx_shift_schedule_date ON shift_schedule(shift_date);
 CREATE INDEX idx_sale_order_created_at ON sale_order(created_at);
 CREATE INDEX idx_sale_order_status ON sale_order(order_status);
-CREATE INDEX idx_order_logistics_order_id ON order_logistics(order_id);
-CREATE INDEX idx_order_review_order_id ON order_review(order_id);
-
 CREATE OR REPLACE VIEW v_medicine_stock AS
 SELECT
     s.id AS store_id,
@@ -302,12 +273,6 @@ CREATE TRIGGER trg_sale_order_updated_at BEFORE UPDATE ON sale_order
 FOR EACH ROW EXECUTE PROCEDURE fn_set_updated_at();
 
 CREATE TRIGGER trg_sale_order_item_updated_at BEFORE UPDATE ON sale_order_item
-FOR EACH ROW EXECUTE PROCEDURE fn_set_updated_at();
-
-CREATE TRIGGER trg_order_logistics_updated_at BEFORE UPDATE ON order_logistics
-FOR EACH ROW EXECUTE PROCEDURE fn_set_updated_at();
-
-CREATE TRIGGER trg_order_review_updated_at BEFORE UPDATE ON order_review
 FOR EACH ROW EXECUTE PROCEDURE fn_set_updated_at();
 
 CREATE TRIGGER trg_log_sale_item AFTER INSERT ON sale_order_item

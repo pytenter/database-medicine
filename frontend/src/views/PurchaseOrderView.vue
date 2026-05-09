@@ -3,7 +3,6 @@
     <div class="toolbar">
       <div>
         <h3 class="page-title">采购订单</h3>
-        <p class="page-subtitle">为当前门店维护采购单、到货计划和采购状态。</p>
       </div>
       <div class="toolbar-actions toolbar-wrap">
         <el-input v-model="keyword" placeholder="按采购单号或厂商搜索" style="width: 260px;" clearable @keyup.enter="loadOrders" />
@@ -43,21 +42,21 @@
 
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑采购单' : '新增采购单'" width="620px">
       <el-form :model="form" label-width="110px">
-        <el-form-item label="采购单号"><el-input v-model="form.order_no" :disabled="Boolean(editingId)" /></el-form-item>
-        <el-form-item label="厂商名称">
+        <el-form-item label="采购单号 ⭐️"><el-input v-model="form.order_no" :disabled="Boolean(editingId)" /></el-form-item>
+        <el-form-item label="厂商名称 ⭐️">
           <el-select v-model="form.manufacturer" style="width: 100%;">
             <el-option v-for="item in manufacturers" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="采购人"><el-input v-model="form.purchaser_name" /></el-form-item>
+        <el-form-item label="采购人 ⭐️"><el-input v-model="form.purchaser_name" /></el-form-item>
         <el-form-item label="计划到货"><el-date-picker v-model="form.planned_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;" /></el-form-item>
-        <el-form-item label="采购金额"><el-input-number v-model="form.total_amount" :min="0" :precision="2" style="width: 100%;" /></el-form-item>
-        <el-form-item label="采购状态">
+        <el-form-item label="采购金额 ⭐️"><el-input-number v-model="form.total_amount" :min="0" :precision="2" style="width: 100%;" /></el-form-item>
+        <el-form-item label="采购状态 ⭐️">
           <el-select v-model="form.status" style="width: 100%;">
             <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="采购内容"><el-input v-model="form.item_summary" type="textarea" :rows="3" /></el-form-item>
+        <el-form-item label="采购内容 ⭐️"><el-input v-model="form.item_summary" type="textarea" :rows="3" /></el-form-item>
         <el-form-item label="备注"><el-input v-model="form.remark" type="textarea" :rows="2" /></el-form-item>
       </el-form>
       <template #footer>
@@ -170,6 +169,34 @@ const openDialog = (row = null) => {
 const submitForm = async () => {
   try {
     const payload = { ...form, store: currentUser?.store };
+    if (!payload.store) {
+      ElMessage.warning("当前账号未关联门店，无法创建采购单。");
+      return;
+    }
+    if (!payload.order_no.trim()) {
+      ElMessage.warning("请填写采购单号。");
+      return;
+    }
+    if (!payload.manufacturer) {
+      ElMessage.warning("请选择厂商。");
+      return;
+    }
+    if (!payload.purchaser_name.trim()) {
+      ElMessage.warning("请填写采购人。");
+      return;
+    }
+    if (payload.total_amount === null || payload.total_amount === undefined || Number(payload.total_amount) < 0) {
+      ElMessage.warning("请填写不小于 0 的采购金额。");
+      return;
+    }
+    if (!payload.status) {
+      ElMessage.warning("请选择采购状态。");
+      return;
+    }
+    if (!payload.item_summary.trim()) {
+      ElMessage.warning("请填写采购内容。");
+      return;
+    }
     if (editingId.value) {
       await updatePurchaseOrderApi(editingId.value, payload);
       ElMessage.success("采购单更新成功。");

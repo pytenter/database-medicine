@@ -17,8 +17,6 @@ REQUIRED_TABLES = {
     "shift_schedule",
     "sale_order",
     "sale_order_item",
-    "order_logistics",
-    "order_review",
 }
 
 BASE_DIR = Path(__file__).resolve().parents[2]

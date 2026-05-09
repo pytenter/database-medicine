@@ -193,7 +193,7 @@ INSERT INTO inventory (id, store_id, medicine_id, quantity, warning_threshold, c
 
 -- announcement
 INSERT INTO announcement (id, title, content, is_published, created_by_id, created_at, updated_at) VALUES (7, '本周门店药品效期巡检安排', '请各门店管理员在本周五前完成近效期药品排查，并及时更新库存备注。', TRUE, 1, '2026-04-02 10:19:50', '2026-04-02 10:19:50');
-INSERT INTO announcement (id, title, content, is_published, created_by_id, created_at, updated_at) VALUES (8, '销售演示账号检查通知', '答辩前请确认销售人员账号状态正常，并检查订单、物流和评价页面可正常访问。', TRUE, 1, '2026-04-02 10:19:50', '2026-04-02 10:19:50');
+INSERT INTO announcement (id, title, content, is_published, created_by_id, created_at, updated_at) VALUES (8, '销售演示账号检查通知', '答辩前请确认销售人员账号状态正常，并检查销售订单页面可正常访问。', TRUE, 1, '2026-04-02 10:19:50', '2026-04-02 10:19:50');
 INSERT INTO announcement (id, title, content, is_published, created_by_id, created_at, updated_at) VALUES (9, '冷链药品存储记录提醒', '涉及冷链存储的药品请补充门店巡检记录，确保演示时业务流程完整。', TRUE, 1, '2026-04-02 10:19:50', '2026-04-02 10:19:50');
 INSERT INTO announcement (id, title, content, is_published, created_by_id, created_at, updated_at) VALUES (10, '清明节门店轮班安排通知', '请各门店管理员在下班前确认节假日营业时间和值班名单。', TRUE, 1, '2026-04-02 14:47:59', '2026-04-02 14:47:59');
 INSERT INTO announcement (id, title, content, is_published, created_by_id, created_at, updated_at) VALUES (11, '慢病药品库存预警提醒', '降压平片、二甲双胍片等慢病药品需重点关注库存变动。', TRUE, 1, '2026-04-02 14:47:59', '2026-04-02 14:47:59');
@@ -364,105 +364,7 @@ INSERT INTO sale_order_item (id, order_id, medicine_id, quantity, unit_price, am
 INSERT INTO sale_order_item (id, order_id, medicine_id, quantity, unit_price, amount, created_at, updated_at) VALUES (81, 43, 5, 3, 26.00, 78.00, '2026-04-02 14:48:02', '2026-04-02 14:48:02');
 INSERT INTO sale_order_item (id, order_id, medicine_id, quantity, unit_price, amount, created_at, updated_at) VALUES (82, 43, 23, 2, 15.00, 30.00, '2026-04-02 14:48:02', '2026-04-02 14:48:02');
 
--- order_logistics
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (1, 5, '等待配送', '系统初始化', 'ordered', '2026-04-01 15:35:38', '2026-04-01 15:35:38');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (2, 5, '配送员正在配送', '系统初始化', 'delivering', '2026-04-01 15:35:38', '2026-04-01 15:35:38');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (3, 5, '订单已送达', '系统初始化', 'completed', '2026-04-01 15:35:38', '2026-04-01 15:35:38');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (4, 6, '等待配送', '系统初始化', 'ordered', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (5, 6, '配送员正在配送', '系统初始化', 'delivering', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (6, 7, '等待配送', '系统初始化', 'ordered', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (7, 8, '等待配送', '系统初始化', 'ordered', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (8, 8, '订单待付款，暂未进入配送流程。', '系统初始化', 'pending_payment', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (9, 9, '等待配送', '系统初始化', 'ordered', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (10, 9, '配送员正在配送', '系统初始化', 'delivering', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (11, 9, '订单已送达', '系统初始化', 'completed', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (12, 10, '等待配送', '系统初始化', 'ordered', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (13, 10, '配送员正在配送', '系统初始化', 'delivering', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (14, 11, '等待配送', '系统初始化', 'ordered', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (15, 12, '等待配送', '系统初始化', 'ordered', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (16, 12, '订单待付款，暂未进入配送流程。', '系统初始化', 'pending_payment', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (17, 13, '等待配送', '系统初始化', 'ordered', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (18, 13, '配送员正在配送', '系统初始化', 'delivering', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (19, 13, '订单已送达', '系统初始化', 'completed', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (20, 14, '等待配送', '销售员01', 'ordered', '2026-04-02 10:40:48', '2026-04-02 10:40:48');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (21, 14, '配送员正在配送', '销售员01', 'delivering', '2026-04-02 10:44:05', '2026-04-02 10:44:05');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (22, 15, '等待配送', '销售员01', 'ordered', '2026-04-02 10:59:26', '2026-04-02 10:59:26');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (23, 15, '配送员正在配送', '销售员01', '', '2026-04-02 11:12:29', '2026-04-02 11:12:29');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (24, 15, '等待配送', '销售员01', 'ordered', '2026-04-02 11:12:48', '2026-04-02 11:12:48');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (25, 15, '配送员正在配送', '销售员01', 'delivering', '2026-04-02 11:12:54', '2026-04-02 11:12:54');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (26, 15, '订单已送达', '销售员01', 'completed', '2026-04-02 11:13:04', '2026-04-02 11:13:04');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (27, 15, '配送员正在配送', '销售员01', 'delivering', '2026-04-02 11:13:12', '2026-04-02 11:13:12');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (28, 15, '配送员正在配送', '销售员01', '', '2026-04-02 11:13:21', '2026-04-02 11:13:21');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (29, 15, '配送员正在配送', '销售员01', '', '2026-04-02 11:13:37', '2026-04-02 11:13:37');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (30, 15, '配送员正在配送', '销售员01', '', '2026-04-02 11:14:41', '2026-04-02 11:14:41');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (31, 15, '等待配送', '销售员01', 'ordered', '2026-04-02 11:15:50', '2026-04-02 11:15:50');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (32, 15, '配送员正在配送', '销售员01', '', '2026-04-02 11:19:20', '2026-04-02 11:19:20');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (33, 15, '等待配送', '销售员01', 'ordered', '2026-04-02 11:19:52', '2026-04-02 11:19:52');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (34, 15, '配送员正在配送', '销售员01', 'delivering', '2026-04-02 11:19:59', '2026-04-02 11:19:59');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (35, 15, '配送', '销售员01', '', '2026-04-02 11:26:24', '2026-04-02 11:26:24');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (36, 15, '配送员正在配送', '销售员01', 'delivering', '2026-04-02 11:26:32', '2026-04-02 11:26:32');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (37, 16, '订单待付款，暂未进入配送流程。', '销售员01', 'pending_payment', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (38, 17, '等待配送', '销售员01', 'ordered', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (39, 18, '等待配送', '销售员02', 'ordered', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (40, 19, '等待配送', '销售员02', 'delivering', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (41, 19, '配送员正在配送', '销售员02', 'delivering', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (42, 20, '等待配送', '销售员03', 'delivering', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (43, 20, '配送员正在配送', '销售员03', 'delivering', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (44, 21, '等待配送', '销售员03', 'completed', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (45, 21, '配送员正在配送', '销售员03', 'completed', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (46, 21, '订单已送达', '销售员03', 'completed', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (47, 22, '等待配送', '销售员04', 'completed', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (48, 22, '配送员正在配送', '销售员04', 'completed', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (49, 22, '订单已送达', '销售员04', 'completed', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (50, 23, '订单待付款，暂未进入配送流程。', '销售员04', 'pending_payment', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (51, 24, '订单待付款，暂未进入配送流程。', '销售员05', 'pending_payment', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (52, 25, '等待配送', '销售员05', 'ordered', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (53, 26, '等待配送', '销售员06', 'ordered', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (54, 27, '等待配送', '销售员06', 'delivering', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (55, 27, '配送员正在配送', '销售员06', 'delivering', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (56, 28, '等待配送', '销售员07', 'delivering', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (57, 28, '配送员正在配送', '销售员07', 'delivering', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (58, 29, '等待配送', '销售员07', 'completed', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (59, 29, '配送员正在配送', '销售员07', 'completed', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (60, 29, '订单已送达', '销售员07', 'completed', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (61, 30, '等待配送', '销售员08', 'completed', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (62, 30, '配送员正在配送', '销售员08', 'completed', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (63, 30, '订单已送达', '销售员08', 'completed', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (64, 31, '订单待付款，暂未进入配送流程。', '销售员08', 'pending_payment', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (65, 32, '订单待付款，暂未进入配送流程。', '销售员09', 'pending_payment', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (66, 33, '等待配送', '销售员09', 'ordered', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (67, 34, '等待配送', '销售员10', 'ordered', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (68, 35, '等待配送', '销售员10', 'delivering', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (69, 35, '配送员正在配送', '销售员10', 'delivering', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (70, 36, '等待配送', '销售员11', 'delivering', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (71, 36, '配送员正在配送', '销售员11', 'delivering', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (72, 37, '等待配送', '销售员11', 'completed', '2026-04-02 14:48:02', '2026-04-02 14:48:02');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (73, 37, '配送员正在配送', '销售员11', 'completed', '2026-04-02 14:48:02', '2026-04-02 14:48:02');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (74, 37, '订单已送达', '销售员11', 'completed', '2026-04-02 14:48:02', '2026-04-02 14:48:02');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (75, 38, '等待配送', '销售员12', 'completed', '2026-04-02 14:48:02', '2026-04-02 14:48:02');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (76, 38, '配送员正在配送', '销售员12', 'completed', '2026-04-02 14:48:02', '2026-04-02 14:48:02');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (77, 38, '订单已送达', '销售员12', 'completed', '2026-04-02 14:48:02', '2026-04-02 14:48:02');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (78, 39, '订单待付款，暂未进入配送流程。', '销售员12', 'pending_payment', '2026-04-02 14:48:02', '2026-04-02 14:48:02');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (79, 40, '订单待付款，暂未进入配送流程。', '销售员13', 'pending_payment', '2026-04-02 14:48:02', '2026-04-02 14:48:02');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (80, 41, '等待配送', '销售员13', 'ordered', '2026-04-02 14:48:02', '2026-04-02 14:48:02');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (81, 42, '等待配送', '销售员14', 'ordered', '2026-04-02 14:48:02', '2026-04-02 14:48:02');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (82, 43, '等待配送', '销售员14', 'delivering', '2026-04-02 14:48:02', '2026-04-02 14:48:02');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (83, 43, '配送员正在配送', '销售员14', 'delivering', '2026-04-02 14:48:02', '2026-04-02 14:48:02');
 
--- order_review
-INSERT INTO order_review (id, order_id, rating, content, reviewer_name, created_at, updated_at) VALUES (1, 5, 5, '门店服务及时，药品包装完整。', '示例顾客', '2026-04-01 15:35:38', '2026-04-01 15:35:38');
-INSERT INTO order_review (id, order_id, rating, content, reviewer_name, created_at, updated_at) VALUES (2, 6, 4, '配送速度较快，购药体验良好。', '示例顾客', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_review (id, order_id, rating, content, reviewer_name, created_at, updated_at) VALUES (3, 7, 5, '门店服务及时，药品包装完整。', '示例顾客', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_review (id, order_id, rating, content, reviewer_name, created_at, updated_at) VALUES (4, 8, 4, '配送速度较快，购药体验良好。', '示例顾客', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_review (id, order_id, rating, content, reviewer_name, created_at, updated_at) VALUES (5, 9, 5, '门店服务及时，药品包装完整。', '示例顾客', '2026-04-01 15:35:39', '2026-04-01 15:35:39');
-INSERT INTO order_review (id, order_id, rating, content, reviewer_name, created_at, updated_at) VALUES (6, 13, 4, '', '销售员01', '2026-04-02 10:55:48', '2026-04-02 10:55:48');
-INSERT INTO order_review (id, order_id, rating, content, reviewer_name, created_at, updated_at) VALUES (7, 14, 5, '态度非常好', '销售员01', '2026-04-02 10:56:02', '2026-04-02 10:56:02');
-INSERT INTO order_review (id, order_id, rating, content, reviewer_name, created_at, updated_at) VALUES (8, 21, 5, '药品说明清楚，购买体验不错。', '冯同学', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_review (id, order_id, rating, content, reviewer_name, created_at, updated_at) VALUES (9, 22, 4, '物流速度快，整体满意。', '高先生', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_review (id, order_id, rating, content, reviewer_name, created_at, updated_at) VALUES (10, 29, 5, '药品说明清楚，购买体验不错。', '何女士', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_review (id, order_id, rating, content, reviewer_name, created_at, updated_at) VALUES (11, 30, 4, '物流速度快，整体满意。', '郑阿姨', '2026-04-02 14:48:01', '2026-04-02 14:48:01');
-INSERT INTO order_review (id, order_id, rating, content, reviewer_name, created_at, updated_at) VALUES (12, 37, 5, '药品说明清楚，购买体验不错。', '胡先生', '2026-04-02 14:48:02', '2026-04-02 14:48:02');
-INSERT INTO order_review (id, order_id, rating, content, reviewer_name, created_at, updated_at) VALUES (13, 38, 4, '物流速度快，整体满意。', '朱女士', '2026-04-02 14:48:02', '2026-04-02 14:48:02');
 
 -- extra demo data for richer local reproduction
 -- additional salespeople
@@ -595,28 +497,7 @@ INSERT INTO sale_order_item (id, order_id, medicine_id, quantity, unit_price, am
 INSERT INTO sale_order_item (id, order_id, medicine_id, quantity, unit_price, amount, created_at, updated_at) VALUES (106, 51, 33, 1, 27.50, 27.50, '2026-04-04 11:10:00', '2026-04-04 11:10:00');
 INSERT INTO sale_order_item (id, order_id, medicine_id, quantity, unit_price, amount, created_at, updated_at) VALUES (107, 51, 37, 1, 32.00, 32.00, '2026-04-04 11:10:00', '2026-04-04 11:10:00');
 
--- additional logistics
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (84, 44, '等待配送', '销售员15', 'ordered', '2026-04-04 10:01:00', '2026-04-04 10:01:00');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (85, 45, '等待配送', '销售员17', 'ordered', '2026-04-04 10:11:00', '2026-04-04 10:11:00');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (86, 45, '配送员正在配送', '销售员17', 'delivering', '2026-04-04 10:15:00', '2026-04-04 10:15:00');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (87, 46, '等待配送', '销售员19', 'ordered', '2026-04-04 10:21:00', '2026-04-04 10:21:00');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (88, 46, '配送员正在配送', '销售员19', 'delivering', '2026-04-04 10:28:00', '2026-04-04 10:28:00');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (89, 46, '订单已送达', '销售员19', 'completed', '2026-04-04 10:40:00', '2026-04-04 10:40:00');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (90, 47, '订单待付款，暂未进入配送流程。', '销售员21', 'pending_payment', '2026-04-04 10:31:00', '2026-04-04 10:31:00');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (91, 48, '等待配送', '销售员23', 'ordered', '2026-04-04 10:41:00', '2026-04-04 10:41:00');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (92, 48, '配送员正在配送', '销售员23', 'delivering', '2026-04-04 10:50:00', '2026-04-04 10:50:00');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (93, 48, '订单已送达', '销售员23', 'completed', '2026-04-04 11:00:00', '2026-04-04 11:00:00');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (94, 49, '等待配送', '销售员25', 'ordered', '2026-04-04 10:51:00', '2026-04-04 10:51:00');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (95, 50, '等待配送', '销售员16', 'ordered', '2026-04-04 11:01:00', '2026-04-04 11:01:00');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (96, 50, '配送员正在配送', '销售员16', 'delivering', '2026-04-04 11:10:00', '2026-04-04 11:10:00');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (97, 51, '等待配送', '销售员18', 'ordered', '2026-04-04 11:12:00', '2026-04-04 11:12:00');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (98, 51, '配送员正在配送', '销售员18', 'delivering', '2026-04-04 11:20:00', '2026-04-04 11:20:00');
-INSERT INTO order_logistics (id, order_id, content, operator_name, status_after, created_at, updated_at) VALUES (99, 51, '订单已送达', '销售员18', 'completed', '2026-04-04 11:30:00', '2026-04-04 11:30:00');
 
--- additional reviews
-INSERT INTO order_review (id, order_id, rating, content, reviewer_name, created_at, updated_at) VALUES (14, 46, 5, '儿童用药说明细致，配送也很快。', '程女士', '2026-04-04 12:00:00', '2026-04-04 12:00:00');
-INSERT INTO order_review (id, order_id, rating, content, reviewer_name, created_at, updated_at) VALUES (15, 48, 4, '会员日活动优惠明显，购药体验不错。', '沈女士', '2026-04-04 12:05:00', '2026-04-04 12:05:00');
-INSERT INTO order_review (id, order_id, rating, content, reviewer_name, created_at, updated_at) VALUES (16, 51, 5, '慢病药备货齐全，服务效率高。', '孟先生', '2026-04-04 12:10:00', '2026-04-04 12:10:00');
 
 SELECT setval('store_id_seq', COALESCE((SELECT MAX(id) FROM store), 1), true);
 SELECT setval('manufacturer_id_seq', COALESCE((SELECT MAX(id) FROM manufacturer), 1), true);
@@ -629,8 +510,6 @@ SELECT setval('purchase_order_id_seq', COALESCE((SELECT MAX(id) FROM purchase_or
 SELECT setval('shift_schedule_id_seq', COALESCE((SELECT MAX(id) FROM shift_schedule), 1), true);
 SELECT setval('sale_order_id_seq', COALESCE((SELECT MAX(id) FROM sale_order), 1), true);
 SELECT setval('sale_order_item_id_seq', COALESCE((SELECT MAX(id) FROM sale_order_item), 1), true);
-SELECT setval('order_logistics_id_seq', COALESCE((SELECT MAX(id) FROM order_logistics), 1), true);
-SELECT setval('order_review_id_seq', COALESCE((SELECT MAX(id) FROM order_review), 1), true);
 SELECT setval('operation_log_id_seq', COALESCE((SELECT MAX(id) FROM operation_log), 1), true);
 
 COMMIT;

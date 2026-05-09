@@ -4,7 +4,6 @@
       <div class="hero-copy">
         <span class="hero-tag">连锁门店网络</span>
         <h3>药店管理</h3>
-        <p>统一维护连锁药店编码、负责人、联系方式与门店状态，并在地图面板中查看门店分布。</p>
       </div>
       <div class="hero-stats">
         <article class="hero-stat">
@@ -30,7 +29,6 @@
       <div class="toolbar store-toolbar">
         <div class="toolbar-copy">
           <h3 class="page-title">门店列表</h3>
-          <p class="page-subtitle">支持按门店编码、名称、负责人和营业状态进行检索。</p>
         </div>
         <div class="toolbar-actions filter-group">
           <el-input
@@ -159,10 +157,10 @@
 
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑门店' : '新增门店'" width="640px">
       <el-form :model="form" label-width="120px">
-        <el-form-item label="门店编码">
+        <el-form-item label="门店编码 ⭐️">
           <el-input v-model="form.code" />
         </el-form-item>
-        <el-form-item label="门店名称">
+        <el-form-item label="门店名称 ⭐️">
           <el-input v-model="form.name" />
         </el-form-item>
         <el-form-item label="负责人">
@@ -171,7 +169,7 @@
         <el-form-item label="联系方式">
           <el-input v-model="form.phone" />
         </el-form-item>
-        <el-form-item label="门店地址">
+        <el-form-item label="门店地址 ⭐️">
           <el-input v-model="form.address" type="textarea" :rows="3" />
         </el-form-item>
         <el-form-item label="营业状态">
@@ -408,6 +406,18 @@ const openDetail = (row) => {
 };
 
 const submitForm = async () => {
+  if (!form.code.trim()) {
+    ElMessage.warning("请填写门店编码。");
+    return;
+  }
+  if (!form.name.trim()) {
+    ElMessage.warning("请填写门店名称。");
+    return;
+  }
+  if (!form.address.trim()) {
+    ElMessage.warning("请填写门店地址。");
+    return;
+  }
   const payload = { ...form };
   if (editingId.value) {
     await updateStoreApi(editingId.value, payload);

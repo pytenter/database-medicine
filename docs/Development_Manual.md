@@ -8,13 +8,13 @@
 - **System architecture:** Browser + Vue frontend + Django REST backend + openGauss database
 - **Recommended deployment:** Docker Compose
 
-The project builds a complete management system for a chain pharmacy company. It covers daily business operations such as employee account management, pharmacy store management, medicine maintenance, inventory control, sales order creation, logistics tracking, order review, announcements, and business dashboard analysis.
+The project builds a complete management system for a chain pharmacy company. It covers daily business operations such as employee account management, pharmacy store management, medicine maintenance, inventory control, sales order creation, announcements, and business dashboard analysis.
 
 The system is designed around three user roles:
 
 - **System administrator:** manages stores, pharmacy administrators, salespersons, announcements, and chain-level business analysis.
 - **Pharmacy administrator:** manages medicine data, manufacturers, inventory, purchase orders, and salesperson shift schedules for their own store.
-- **Salesperson:** searches medicines, creates sales orders, tracks logistics, submits order reviews, and views authorized order records.
+- **Salesperson:** searches medicines, creates sales orders, and views authorized order records.
 
 ## 2. Project Planning
 
@@ -50,7 +50,7 @@ The project aims to demonstrate the complete lifecycle of a database application
 |---|---|---|
 | System administrator | Manage stores, pharmacy administrators, salespersons, announcements, chain dashboard | All stores |
 | Pharmacy administrator | Manage medicines, manufacturers, inventory, purchase orders, shift schedules | Own store |
-| Salesperson | Search medicines, create sales orders, view orders, update logistics, submit reviews | Own store |
+| Salesperson | Search medicines, create sales orders, and view authorized orders | Own store |
 
 ### 3.2 Functional Requirements
 
@@ -65,7 +65,6 @@ The project aims to demonstrate the complete lifecycle of a database application
 | Purchase order management | Add, edit, delete, status management |
 | Sales order creation | Cart-style order creation, stock validation, transaction-safe inventory deduction |
 | Sales record query | Search by order number/customer/phone, status filtering, date filtering, detail view |
-| Logistics and review | Order logistics update and customer review submission |
 | Announcement management | Published announcements shown on dashboard |
 | Visualization | Income trend, order trend, category ratio, hot medicines, order status, store revenue ranking |
 | Export | CSV export for inventory, sales records, and store revenue comparison |
@@ -134,8 +133,6 @@ The frontend is responsible for page rendering, route-level permission display, 
 | ShiftSchedule | `shift_schedule` | Salesperson shift schedule |
 | SaleOrder | `sale_order` | Sales order header |
 | SaleOrderItem | `sale_order_item` | Sales order item details |
-| OrderLogistics | `order_logistics` | Order logistics records |
-| OrderReview | `order_review` | Customer order review |
 | OperationLog | `operation_log` | Database-triggered operation records |
 
 ### 6.2.1 Role-Based E-R Diagrams
@@ -155,7 +152,7 @@ flowchart LR
     STORE ==>|"store_id FK ownership"| STORE_ADMIN
     STORE ==>|"store_id FK ownership"| STAFF
     STORE_ADMIN ==>|"Maintains medicines, stock, purchases, shifts"| STORE
-    STAFF ==>|"Creates sales, logistics, reviews"| STORE
+    STAFF ==>|"Creates sales orders"| STORE
 
     classDef role fill:#FFE8CC,stroke:#D9480F,stroke-width:3px,color:#3B1D00
     classDef store fill:#E7F5FF,stroke:#1971C2,stroke-width:2px,color:#102A43
@@ -244,35 +241,29 @@ flowchart LR
     subgraph STAFF_DATA["Data Created by Salesperson"]
         SO["Sale Order<br/>sale_order.id PK<br/>store_id FK<br/>salesperson_id FK"]
         SOI["Sale Order Item<br/>sale_order_item.id PK<br/>order_id FK<br/>medicine_id FK"]
-        LOGI["Order Logistics<br/>order_logistics.id PK<br/>order_id FK"]
-        REVIEW["Order Review<br/>order_review.id PK<br/>order_id FK and UNIQUE"]
     end
 
     STORE -->|"1:N store_id"| STAFF
     STAFF ==>|"Creates"| SO
-    STAFF ==>|"Updates"| LOGI
-    STAFF ==>|"Submits"| REVIEW
 
     STORE -->|"1:N store_id"| SO
     SO -->|"1:N order_id"| SOI
     MED -->|"1:N medicine_id"| SOI
-    SO -->|"1:N order_id"| LOGI
-    SO -->|"1:1 order_id"| REVIEW
 
     classDef role fill:#FFE8CC,stroke:#D9480F,stroke-width:3px,color:#3B1D00
     classDef store fill:#E7F5FF,stroke:#1971C2,stroke-width:2px,color:#102A43
     classDef staff fill:#F3F0FF,stroke:#7048E8,color:#24164F
     class STAFF role
     class STORE,MED store
-    class SO,SOI,LOGI,REVIEW staff
+    class SO,SOI staff
 ```
 
 ### 6.3 Physical Design Highlights
 
 - Primary keys are defined for every business table.
-- Foreign keys connect users, stores, medicines, inventory, orders, logistics, and reviews.
+- Foreign keys connect users, stores, medicines, inventory, and orders.
 - Unique constraints are defined for store code, store name, username, manufacturer name, medicine category name, medicine code, inventory store-medicine pair, purchase order number, and sale order number.
-- Check constraints validate role values, prices, inventory quantities, purchase status, order status, item amount, and review rating.
+- Check constraints validate role values, prices, inventory quantities, purchase status, order status, and item amount.
 - Indexes are defined on high-frequency query fields such as medicine name, medicine code, manufacturer name, store, inventory medicine, order status, and order creation time.
 - A database view `v_medicine_stock` provides a stock overview with store, medicine, manufacturer, quantity, warning threshold, and warning status.
 - Trigger `fn_set_updated_at` automatically refreshes `updated_at` when records are modified.
@@ -296,7 +287,7 @@ flowchart LR
 | `accounts` | Login, current user, user management, role permissions, shift schedules |
 | `medicine` | Manufacturer, category, and medicine APIs |
 | `inventory` | Store, inventory, and purchase order APIs |
-| `sales` | Sales order, order item, logistics, and review APIs |
+| `sales` | Sales order and order item APIs |
 | `announcements` | Announcement CRUD APIs |
 | `common` | Dashboard overview and statistical aggregation |
 
@@ -308,7 +299,7 @@ flowchart LR
 | `/api/users/` | User and shift schedule management |
 | `/api/medicines/` | Manufacturer, category, medicine management |
 | `/api/inventory/` | Store, inventory, purchase order management |
-| `/api/sales/` | Sales orders, logistics, reviews |
+| `/api/sales/` | Sales orders and order items |
 | `/api/announcements/` | Announcement management |
 | `/api/dashboard/` | Dashboard statistics |
 
@@ -319,7 +310,7 @@ The backend uses DRF permission classes to protect APIs:
 - `IsSystemAdmin`: only system administrators can manage stores, pharmacy administrators, salespersons, and announcements.
 - `IsPharmacyAdmin`: only pharmacy administrators can manage medicines, manufacturers, inventory, purchase orders, and shift schedules.
 - `InventoryPermission`: pharmacy administrators can write inventory data; salespersons can only read it.
-- `SalesPermission`: all roles can read authorized sales records; only salespersons can create sales orders and update logistics/reviews.
+- `SalesPermission`: all roles can read authorized sales records; only salespersons can create sales orders.
 
 ## 8. Frontend Design
 
@@ -341,8 +332,6 @@ The backend uses DRF permission classes to protect APIs:
 | Shift Schedules | Pharmacy administrator | Salesperson scheduling |
 | Sales Create | Salesperson | Search medicines, cart, phone validation, submit order |
 | Sales Records | All roles | Search, status filter, date filter, pagination, detail view, CSV export |
-| Logistics | Salesperson | Logistics update |
-| Reviews | Salesperson | Submit customer reviews |
 
 ### 8.2 Frontend Permission Flow
 
@@ -403,9 +392,8 @@ flowchart TD
     E -- Yes --> G[Create sale_order]
     G --> H[Create sale_order_item records]
     H --> I[Deduct inventory quantity]
-    I --> J[Create logistics record]
-    J --> K[Trigger operation_log record]
-    K --> L[Return order number]
+    I --> J[Trigger operation_log record]
+    J --> K[Return order number]
 ```
 
 The backend wraps order creation and inventory deduction in a database transaction. If any item has insufficient stock, the order is rejected and inventory remains unchanged.
@@ -437,7 +425,7 @@ flowchart LR
 | 8 | Pharmacy administrator updates inventory | Quantity and warning status are updated |
 | 9 | Salesperson creates a sales order | Order is created and inventory is deducted |
 | 10 | Salesperson creates order with insufficient stock | Request is rejected with stock warning |
-| 11 | View order detail | Order items, logistics, and review are displayed |
+| 11 | View order detail | Order items are displayed |
 | 12 | Dashboard opens after login | Charts and risk cards load successfully |
 | 13 | Export inventory/sales/revenue CSV | Browser downloads the CSV file |
 | 14 | Unauthorized route access | User is redirected to dashboard |

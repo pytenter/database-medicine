@@ -3,7 +3,6 @@
     <div class="toolbar">
       <div>
         <h3 class="page-title">公告管理</h3>
-        <p class="page-subtitle">发布系统公告，供各门店管理员和销售人员查看。</p>
       </div>
       <div class="toolbar-actions">
         <el-input v-model="keyword" placeholder="输入公告标题搜索" style="width: 260px;" clearable @keyup.enter="loadAnnouncements" />
@@ -34,10 +33,10 @@
 
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑公告' : '新增公告'" width="680px">
       <el-form :model="form" label-width="100px">
-        <el-form-item label="公告标题">
+        <el-form-item label="公告标题 ⭐️">
           <el-input v-model="form.title" />
         </el-form-item>
-        <el-form-item label="公告内容">
+        <el-form-item label="公告内容 ⭐️">
           <el-input v-model="form.content" type="textarea" :rows="8" />
         </el-form-item>
         <el-form-item label="发布状态">
@@ -88,6 +87,14 @@ const openDialog = (row = null) => {
 };
 
 const submitForm = async () => {
+  if (!form.title.trim()) {
+    ElMessage.warning("请填写公告标题。");
+    return;
+  }
+  if (!form.content.trim()) {
+    ElMessage.warning("请填写公告内容。");
+    return;
+  }
   try {
     if (editingId.value) {
       await updateAnnouncementApi(editingId.value, form);

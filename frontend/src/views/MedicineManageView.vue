@@ -4,7 +4,6 @@
       <div class="toolbar">
         <div>
           <h3 class="page-title">药品管理</h3>
-          <p class="page-subtitle">支持按药品名称、厂商和编码进行模糊查询。</p>
         </div>
         <div class="toolbar-actions">
           <el-input v-model="keyword" placeholder="请输入药品关键词" style="width: 260px;" clearable @keyup.enter="loadMedicines" />
@@ -38,18 +37,18 @@
 
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑药品' : '新增药品'" width="680px">
       <el-form :model="form" label-width="140px">
-        <el-form-item label="药品编码"><el-input v-model="form.code" /></el-form-item>
-        <el-form-item label="药品名称"><el-input v-model="form.name" /></el-form-item>
-        <el-form-item label="规格"><el-input v-model="form.specification" /></el-form-item>
-        <el-form-item label="单位"><el-input v-model="form.unit" /></el-form-item>
-        <el-form-item label="进价"><el-input-number v-model="form.purchase_price" :min="0.01" :precision="2" style="width: 100%;" /></el-form-item>
-        <el-form-item label="零售价"><el-input-number v-model="form.retail_price" :min="0.01" :precision="2" style="width: 100%;" /></el-form-item>
-        <el-form-item label="生产厂商">
+        <el-form-item label="药品编码 ⭐️"><el-input v-model="form.code" /></el-form-item>
+        <el-form-item label="药品名称 ⭐️"><el-input v-model="form.name" /></el-form-item>
+        <el-form-item label="规格 ⭐️"><el-input v-model="form.specification" /></el-form-item>
+        <el-form-item label="单位 ⭐️"><el-input v-model="form.unit" /></el-form-item>
+        <el-form-item label="进价 ⭐️"><el-input-number v-model="form.purchase_price" :min="0.01" :precision="2" style="width: 100%;" /></el-form-item>
+        <el-form-item label="零售价 ⭐️"><el-input-number v-model="form.retail_price" :min="0.01" :precision="2" style="width: 100%;" /></el-form-item>
+        <el-form-item label="生产厂商 ⭐️">
           <el-select v-model="form.manufacturer" style="width: 100%;">
             <el-option v-for="item in manufacturers" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="药品分类">
+        <el-form-item label="药品分类 ⭐️">
           <el-select v-model="form.category" style="width: 100%;">
             <el-option v-for="item in categories" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
@@ -67,7 +66,7 @@
 
     <el-dialog v-model="manufacturerDialog" title="新增厂商" width="500px">
       <el-form :model="manufacturerForm" label-width="140px">
-        <el-form-item label="厂商名称"><el-input v-model="manufacturerForm.name" /></el-form-item>
+        <el-form-item label="厂商名称 ⭐️"><el-input v-model="manufacturerForm.name" /></el-form-item>
         <el-form-item label="联系人"><el-input v-model="manufacturerForm.contact_person" /></el-form-item>
         <el-form-item label="联系电话"><el-input v-model="manufacturerForm.contact_phone" /></el-form-item>
       </el-form>
@@ -79,7 +78,7 @@
 
     <el-dialog v-model="categoryDialog" title="新增分类" width="500px">
       <el-form :model="categoryForm" label-width="140px">
-        <el-form-item label="分类名称"><el-input v-model="categoryForm.name" /></el-form-item>
+        <el-form-item label="分类名称 ⭐️"><el-input v-model="categoryForm.name" /></el-form-item>
         <el-form-item label="分类说明"><el-input v-model="categoryForm.description" type="textarea" /></el-form-item>
       </el-form>
       <template #footer>
@@ -190,6 +189,38 @@ const openDialog = (row = null) => {
 
 const submitForm = async () => {
   const payload = { ...form };
+  if (!payload.code.trim()) {
+    ElMessage.warning("请填写药品编码。");
+    return;
+  }
+  if (!payload.name.trim()) {
+    ElMessage.warning("请填写药品名称。");
+    return;
+  }
+  if (!payload.specification.trim()) {
+    ElMessage.warning("请填写药品规格。");
+    return;
+  }
+  if (!payload.unit.trim()) {
+    ElMessage.warning("请填写药品单位。");
+    return;
+  }
+  if (!payload.manufacturer) {
+    ElMessage.warning("请选择生产厂商。");
+    return;
+  }
+  if (!payload.category) {
+    ElMessage.warning("请选择药品分类。");
+    return;
+  }
+  if (!payload.purchase_price || Number(payload.purchase_price) <= 0) {
+    ElMessage.warning("请填写大于 0 的进价。");
+    return;
+  }
+  if (!payload.retail_price || Number(payload.retail_price) <= 0) {
+    ElMessage.warning("请填写大于 0 的零售价。");
+    return;
+  }
   try {
     if (editingId.value) {
       await updateMedicineApi(editingId.value, payload);
@@ -223,6 +254,10 @@ const removeMedicine = async (row) => {
 };
 
 const submitManufacturer = async () => {
+  if (!manufacturerForm.name.trim()) {
+    ElMessage.warning("请填写厂商名称。");
+    return;
+  }
   try {
     await createManufacturerApi(manufacturerForm);
     ElMessage.success("厂商创建成功。");
@@ -235,6 +270,10 @@ const submitManufacturer = async () => {
 };
 
 const submitCategory = async () => {
+  if (!categoryForm.name.trim()) {
+    ElMessage.warning("请填写分类名称。");
+    return;
+  }
   try {
     await createCategoryApi(categoryForm);
     ElMessage.success("分类创建成功。");

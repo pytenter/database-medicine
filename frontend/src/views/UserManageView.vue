@@ -3,7 +3,6 @@
     <div class="toolbar">
       <div>
         <h3 class="page-title">用户管理</h3>
-        <p class="page-subtitle">仅系统管理员可以管理药店管理员和销售人员。</p>
       </div>
       <div class="toolbar-actions">
         <el-input v-model="keyword" placeholder="按用户名或姓名搜索" style="width: 260px;" clearable @keyup.enter="loadUsers" />
@@ -35,23 +34,23 @@
 
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑用户' : '新增用户'" width="560px">
       <el-form :model="form" label-width="120px">
-        <el-form-item label="用户名">
+        <el-form-item label="用户名 ⭐️">
           <el-input v-model="form.username" :disabled="Boolean(editingId)" />
         </el-form-item>
         <el-form-item label="密码" v-if="!editingId">
           <el-input v-model="form.password" show-password placeholder="留空则默认 Admin@123" />
         </el-form-item>
-        <el-form-item label="姓名">
+        <el-form-item label="姓名 ⭐️">
           <el-input v-model="form.full_name" />
         </el-form-item>
-        <el-form-item label="角色">
+        <el-form-item label="角色 ⭐️">
           <el-select v-model="form.role" style="width: 100%;">
             <el-option label="系统管理员" value="system_admin" />
             <el-option label="药店管理员" value="pharmacy_admin" />
             <el-option label="销售人员" value="salesperson" />
           </el-select>
         </el-form-item>
-        <el-form-item label="所属门店">
+        <el-form-item :label="form.role === 'system_admin' ? '所属门店' : '所属门店 ⭐️'">
           <el-select v-model="form.store" style="width: 100%;" clearable :disabled="form.role === 'system_admin'">
             <el-option v-for="store in stores" :key="store.id" :label="store.name" :value="store.id" />
           </el-select>
@@ -141,6 +140,22 @@ const openDialog = (row = null) => {
 
 const submitForm = async () => {
   const payload = { ...form };
+  if (!payload.username.trim()) {
+    ElMessage.warning("请填写用户名。");
+    return;
+  }
+  if (!payload.full_name.trim()) {
+    ElMessage.warning("请填写姓名。");
+    return;
+  }
+  if (!payload.role) {
+    ElMessage.warning("请选择角色。");
+    return;
+  }
+  if (payload.role !== "system_admin" && !payload.store) {
+    ElMessage.warning("请选择所属门店。");
+    return;
+  }
   if (!payload.password) {
     delete payload.password;
   }

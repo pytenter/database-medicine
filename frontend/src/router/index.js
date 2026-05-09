@@ -5,10 +5,8 @@ import AnnouncementManageView from "../views/AnnouncementManageView.vue";
 import DashboardView from "../views/DashboardView.vue";
 import InventoryView from "../views/InventoryView.vue";
 import LoginView from "../views/LoginView.vue";
-import LogisticsManageView from "../views/LogisticsManageView.vue";
 import ManufacturerManageView from "../views/ManufacturerManageView.vue";
 import MedicineManageView from "../views/MedicineManageView.vue";
-import OrderReviewView from "../views/OrderReviewView.vue";
 import PharmacyAdminManageView from "../views/PharmacyAdminManageView.vue";
 import PurchaseOrderView from "../views/PurchaseOrderView.vue";
 import RevenueComparisonView from "../views/RevenueComparisonView.vue";
@@ -107,18 +105,6 @@ const routes = [
         name: "sale-records",
         component: SaleRecordView,
         meta: { title: "订单信息", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
-      },
-      {
-        path: "/sales/logistics",
-        name: "sale-logistics",
-        component: LogisticsManageView,
-        meta: { title: "物流信息", roles: ["salesperson"] },
-      },
-      {
-        path: "/sales/reviews",
-        name: "sale-reviews",
-        component: OrderReviewView,
-        meta: { title: "订单评价", roles: ["salesperson"] },
       },
     ],
   },

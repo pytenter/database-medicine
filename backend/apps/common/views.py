@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 from apps.accounts.models import RoleChoices, User
 from apps.announcements.models import Announcement
 from apps.inventory.models import Inventory, Store
-from apps.sales.models import OrderLogistics, OrderReview, SaleOrder
+from apps.sales.models import SaleOrder
 
 
 class DashboardOverviewView(APIView):
@@ -87,25 +87,14 @@ class DashboardOverviewView(APIView):
             for item in Announcement.objects.filter(is_published=True).order_by("-created_at", "-id").values("id", "title", "content", "created_at")[:3]
         ]
 
-        logistics = OrderLogistics.objects.all()
-        reviews = OrderReview.objects.all()
-        if user.role in {RoleChoices.PHARMACY_ADMIN, RoleChoices.SALESPERSON} and user.store_id:
-            logistics = logistics.filter(order__store_id=user.store_id)
-            reviews = reviews.filter(order__store_id=user.store_id)
-
-        logistics_daily = {row["day"]: int(row["count"]) for row in logistics.annotate(day=TruncDate("created_at")).values("day").annotate(count=Count("id"))}
-        reviews_daily = {row["day"]: int(row["count"]) for row in reviews.annotate(day=TruncDate("created_at")).values("day").annotate(count=Count("id"))}
-
         activity_last_seven_days = []
         for offset in range(6, -1, -1):
             day = now.date() - timedelta(days=offset)
             sale_count = int(sales_daily.get(day, {}).get("order_count", 0) or 0)
-            logistics_count = logistics_daily.get(day, 0)
-            review_count = reviews_daily.get(day, 0)
             activity_last_seven_days.append({
                 "date": day.isoformat(),
                 "label": day.strftime("%m-%d"),
-                "value": sale_count + logistics_count + review_count,
+                "value": sale_count,
             })
 
         return Response({

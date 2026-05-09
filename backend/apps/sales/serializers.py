@@ -4,37 +4,13 @@ from uuid import uuid4
 from django.db import transaction
 from rest_framework import serializers
 
-from apps.common.text import CleanDisplaySerializerMixin, is_placeholder_text, repair_text
+from apps.common.text import CleanDisplaySerializerMixin
 from apps.inventory.models import Inventory
 from apps.sales.models import (
-    OrderLogistics,
-    OrderReview,
     SaleOrder,
     SaleOrderItem,
     SaleOrderStatusChoices,
 )
-
-
-_STANDARD_LOGISTICS_CONTENT = {
-    SaleOrderStatusChoices.ORDERED: "等待配送",
-    SaleOrderStatusChoices.DELIVERING: "配送员正在配送",
-    SaleOrderStatusChoices.COMPLETED: "订单已送达",
-}
-
-_LEGACY_LOGISTICS_CONTENT = {
-    "订单已创建，等待门店备货。": _STANDARD_LOGISTICS_CONTENT[SaleOrderStatusChoices.ORDERED],
-    "药店已完成拣货，配送员正在派送。": _STANDARD_LOGISTICS_CONTENT[SaleOrderStatusChoices.DELIVERING],
-    "订单已完成签收，客户已收货。": _STANDARD_LOGISTICS_CONTENT[SaleOrderStatusChoices.COMPLETED],
-    "正在配送": _STANDARD_LOGISTICS_CONTENT[SaleOrderStatusChoices.DELIVERING],
-}
-
-
-def normalize_logistics_content(content, status_after=""):
-    cleaned = repair_text(content or "")
-    cleaned = _LEGACY_LOGISTICS_CONTENT.get(cleaned, cleaned)
-    if is_placeholder_text(cleaned):
-        return _STANDARD_LOGISTICS_CONTENT.get(status_after, "物流状态已更新")
-    return cleaned
 
 
 class SaleOrderItemWriteSerializer(serializers.Serializer):
@@ -61,42 +37,13 @@ class SaleOrderItemReadSerializer(CleanDisplaySerializerMixin, serializers.Model
         ]
 
 
-class OrderLogisticsSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
-    status_after_label = serializers.CharField(source="get_status_after_display", read_only=True)
-
-    class Meta:
-        model = OrderLogistics
-        fields = [
-            "id",
-            "content",
-            "operator_name",
-            "status_after",
-            "status_after_label",
-            "created_at",
-        ]
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data["content"] = normalize_logistics_content(data.get("content"), data.get("status_after", ""))
-        return data
-
-
-class OrderReviewSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
-    class Meta:
-        model = OrderReview
-        fields = ["id", "rating", "content", "reviewer_name", "created_at", "updated_at"]
-
-
 class SaleOrderSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
     items = SaleOrderItemReadSerializer(many=True, read_only=True)
-    logistics = OrderLogisticsSerializer(many=True, read_only=True)
-    review = OrderReviewSerializer(read_only=True)
     store_name = serializers.CharField(source="store.name", read_only=True)
     store_address = serializers.CharField(source="store.address", read_only=True)
     store_phone = serializers.CharField(source="store.phone", read_only=True)
     salesperson_name = serializers.CharField(source="salesperson.full_name", read_only=True)
     order_status_label = serializers.CharField(source="get_order_status_display", read_only=True)
-    latest_logistics = serializers.SerializerMethodField()
 
     class Meta:
         model = SaleOrder
@@ -116,15 +63,8 @@ class SaleOrderSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializ
             "total_amount",
             "remark",
             "items",
-            "logistics",
-            "latest_logistics",
-            "review",
             "created_at",
         ]
-
-    def get_latest_logistics(self, obj):
-        latest = obj.logistics.order_by("-created_at", "-id").first()
-        return OrderLogisticsSerializer(latest).data if latest else None
 
 
 class SaleCreateSerializer(serializers.Serializer):
@@ -191,58 +131,4 @@ class SaleCreateSerializer(serializers.Serializer):
 
         order.total_amount = total_amount
         order.save(update_fields=["total_amount", "updated_at"])
-        OrderLogistics.objects.create(
-            order=order,
-            content=_STANDARD_LOGISTICS_CONTENT[SaleOrderStatusChoices.ORDERED],
-            operator_name=user.full_name or user.username,
-            status_after=SaleOrderStatusChoices.ORDERED,
-        )
         return order
-
-
-class LogisticsUpdateSerializer(serializers.Serializer):
-    content = serializers.CharField(max_length=255)
-    status_after = serializers.ChoiceField(
-        choices=SaleOrderStatusChoices.choices,
-        required=False,
-        allow_blank=False,
-    )
-
-    @transaction.atomic
-    def create(self, validated_data):
-        order = self.context["order"]
-        user = self.context["request"].user
-        status_after = validated_data.get("status_after", "")
-        content = normalize_logistics_content(validated_data.get("content"), status_after)
-        if status_after in _STANDARD_LOGISTICS_CONTENT and not content:
-            content = _STANDARD_LOGISTICS_CONTENT[status_after]
-
-        logistics = OrderLogistics.objects.create(
-            order=order,
-            content=content,
-            operator_name=user.full_name or user.username,
-            status_after=status_after,
-        )
-        if validated_data.get("status_after"):
-            order.order_status = validated_data["status_after"]
-            order.save(update_fields=["order_status", "updated_at"])
-        return logistics
-
-
-class ReviewSubmitSerializer(serializers.Serializer):
-    rating = serializers.IntegerField(min_value=1, max_value=5)
-    content = serializers.CharField(max_length=255, required=False, allow_blank=True)
-
-    @transaction.atomic
-    def create(self, validated_data):
-        order = self.context["order"]
-        user = self.context["request"].user
-        review, _created = OrderReview.objects.update_or_create(
-            order=order,
-            defaults={
-                "rating": validated_data["rating"],
-                "content": validated_data.get("content", ""),
-                "reviewer_name": user.full_name or user.username,
-            },
-        )
-        return review

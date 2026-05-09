@@ -4,7 +4,6 @@
       <div class="toolbar sale-toolbar">
         <div>
           <h3 class="page-title">销售开单</h3>
-          <p class="page-subtitle">支持按药品名称、生产厂商或编码搜索，并将药品加入订单后直接提交销售。</p>
         </div>
         <div class="toolbar-actions">
           <el-input v-model="keyword" placeholder="搜索药品名称、厂商或编码" clearable style="width: 280px;" @keyup.enter="loadInventory" />
@@ -45,12 +44,12 @@
               <el-input v-model="saleForm.customer_phone" placeholder="请输入联系电话" />
             </el-form-item>
             <el-form-item label="订单备注">
-              <el-input v-model="saleForm.remark" type="textarea" :rows="3" placeholder="可填写配送说明、特殊提醒等" />
+              <el-input v-model="saleForm.remark" type="textarea" :rows="3" placeholder="可填写用药提醒、顾客备注等" />
             </el-form-item>
           </el-form>
 
           <div class="cart-head">
-            <span>订单明细</span>
+            <span>订单明细 ⭐️</span>
             <span class="cart-count">共 {{ cart.length }} 项</span>
           </div>
           <el-table :data="cart" border max-height="280" empty-text="请先从左侧加入药品">

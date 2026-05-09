@@ -3,7 +3,6 @@
     <div class="toolbar">
       <div>
         <h3 class="page-title">销售人员管理</h3>
-        <p class="page-subtitle">统一管理各门店销售人员账号、状态和所属门店。</p>
       </div>
       <div class="toolbar-actions">
         <el-input v-model="keyword" placeholder="输入用户名或姓名搜索" style="width: 260px;" clearable @keyup.enter="loadUsers" />
@@ -35,16 +34,16 @@
 
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑销售人员' : '新增销售人员'" width="560px">
       <el-form :model="form" label-width="120px">
-        <el-form-item label="用户名">
+        <el-form-item label="用户名 ⭐️">
           <el-input v-model="form.username" :disabled="Boolean(editingId)" />
         </el-form-item>
         <el-form-item label="密码" v-if="!editingId">
           <el-input v-model="form.password" show-password placeholder="默认密码为 Admin@123" />
         </el-form-item>
-        <el-form-item label="姓名">
+        <el-form-item label="姓名 ⭐️">
           <el-input v-model="form.full_name" />
         </el-form-item>
-        <el-form-item label="所属门店">
+        <el-form-item label="所属门店 ⭐️">
           <el-select v-model="form.store" style="width: 100%;">
             <el-option v-for="store in stores" :key="store.id" :label="store.name" :value="store.id" />
           </el-select>
@@ -109,6 +108,18 @@ const openDialog = (row = null) => {
 
 const submitForm = async () => {
   const payload = { ...form, role: "salesperson" };
+  if (!payload.username.trim()) {
+    ElMessage.warning("请填写用户名。");
+    return;
+  }
+  if (!payload.full_name.trim()) {
+    ElMessage.warning("请填写姓名。");
+    return;
+  }
+  if (!payload.store) {
+    ElMessage.warning("请选择所属门店。");
+    return;
+  }
   if (!payload.password) delete payload.password;
   try {
     if (editingId.value) {

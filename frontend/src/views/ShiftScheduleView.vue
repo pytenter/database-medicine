@@ -3,7 +3,6 @@
     <div class="toolbar">
       <div>
         <h3 class="page-title">销售人员排班</h3>
-        <p class="page-subtitle">为当前门店销售人员安排班次，列表按星期几展示，方便快速查看轮班情况。</p>
       </div>
       <div class="toolbar-actions toolbar-wrap">
         <el-select v-model="salespersonFilter" clearable placeholder="选择销售人员" style="width: 180px;">
@@ -35,19 +34,19 @@
 
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑排班' : '新增排班'" width="620px">
       <el-form :model="form" label-width="110px">
-        <el-form-item label="销售人员">
+        <el-form-item label="销售人员 ⭐️">
           <el-select v-model="form.salesperson" style="width: 100%;">
             <el-option v-for="item in salespeople" :key="item.id" :label="item.full_name" :value="item.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="排班日期"><el-date-picker v-model="form.shift_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;" /></el-form-item>
-        <el-form-item label="班次类型">
+        <el-form-item label="排班日期 ⭐️"><el-date-picker v-model="form.shift_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;" /></el-form-item>
+        <el-form-item label="班次类型 ⭐️">
           <el-select v-model="form.shift_period" style="width: 100%;">
             <el-option v-for="item in shiftOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="开始时间"><el-time-picker v-model="form.start_time" value-format="HH:mm:ss" style="width: 100%;" /></el-form-item>
-        <el-form-item label="结束时间"><el-time-picker v-model="form.end_time" value-format="HH:mm:ss" style="width: 100%;" /></el-form-item>
+        <el-form-item label="开始时间 ⭐️"><el-time-picker v-model="form.start_time" value-format="HH:mm:ss" style="width: 100%;" /></el-form-item>
+        <el-form-item label="结束时间 ⭐️"><el-time-picker v-model="form.end_time" value-format="HH:mm:ss" style="width: 100%;" /></el-form-item>
         <el-form-item label="排班说明"><el-input v-model="form.note" type="textarea" :rows="3" /></el-form-item>
       </el-form>
       <template #footer>
@@ -155,6 +154,34 @@ const openDialog = (row = null) => {
 const submitForm = async () => {
   try {
     const payload = { ...form, store: currentUser?.store };
+    if (!payload.store) {
+      ElMessage.warning("当前账号未关联门店，无法创建排班。");
+      return;
+    }
+    if (!payload.salesperson) {
+      ElMessage.warning("请选择销售人员。");
+      return;
+    }
+    if (!payload.shift_date) {
+      ElMessage.warning("请选择排班日期。");
+      return;
+    }
+    if (!payload.shift_period) {
+      ElMessage.warning("请选择班次类型。");
+      return;
+    }
+    if (!payload.start_time) {
+      ElMessage.warning("请选择开始时间。");
+      return;
+    }
+    if (!payload.end_time) {
+      ElMessage.warning("请选择结束时间。");
+      return;
+    }
+    if (payload.start_time >= payload.end_time) {
+      ElMessage.warning("结束时间必须晚于开始时间。");
+      return;
+    }
     if (editingId.value) {
       await updateShiftScheduleApi(editingId.value, payload);
       ElMessage.success("排班信息更新成功。");

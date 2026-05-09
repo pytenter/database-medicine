@@ -1,9 +1,8 @@
-﻿<template>
+<template>
   <div class="page-card order-page">
     <div class="toolbar order-toolbar">
       <div>
         <h3 class="page-title">订单信息</h3>
-        <p class="page-subtitle">查看销售订单、订单详情和当前物流状态。</p>
       </div>
       <div class="toolbar-actions wrap-actions">
         <el-input v-model="keyword" placeholder="按订单编号、客户或电话搜索" clearable style="width: 260px;" @keyup.enter="loadSales" />
@@ -44,8 +43,8 @@
         <el-steps :active="statusIndex(currentOrder.order_status)" finish-status="success" align-center class="order-steps">
           <el-step title="待付款" />
           <el-step title="已下单" />
-          <el-step title="配送中" />
-          <el-step title="已收货" />
+          <el-step title="处理中" />
+          <el-step title="已完成" />
         </el-steps>
 
         <div class="detail-grid">
@@ -86,29 +85,6 @@
           </el-table>
         </section>
 
-        <section class="detail-card">
-          <div class="detail-title">当前物流</div>
-          <el-table :data="currentOrder.logistics" border>
-            <el-table-column prop="content" label="物流信息" min-width="280" />
-            <el-table-column prop="status_after_label" label="状态更新" width="120">
-              <template #default="scope">{{ scope.row.status_after_label || '-' }}</template>
-            </el-table-column>
-            <el-table-column prop="operator_name" label="操作人员" width="130" />
-            <el-table-column prop="created_at" label="操作时间" min-width="180">
-              <template #default="scope">{{ formatDateTime(scope.row.created_at) }}</template>
-            </el-table-column>
-          </el-table>
-        </section>
-
-        <section class="detail-card">
-          <div class="detail-title">订单评价</div>
-          <div v-if="currentOrder.review" class="review-box">
-            <el-rate :model-value="currentOrder.review.rating" disabled />
-            <p>{{ currentOrder.review.content || '客户未填写文字评价。' }}</p>
-            <span>{{ currentOrder.review.reviewer_name || '匿名评价' }} · {{ formatDateTime(currentOrder.review.updated_at) }}</span>
-          </div>
-          <el-empty v-else description="当前订单暂未评价" :image-size="72" />
-        </section>
       </template>
     </el-dialog>
   </div>
@@ -133,8 +109,8 @@ const canCreateOrder = computed(() => auth.role === "salesperson");
 const statusOptions = [
   { label: "待付款", value: "pending_payment" },
   { label: "已下单", value: "ordered" },
-  { label: "配送中", value: "delivering" },
-  { label: "已收货", value: "completed" },
+  { label: "处理中", value: "delivering" },
+  { label: "已完成", value: "completed" },
 ];
 
 const formatDateTime = (value) => {
@@ -210,23 +186,6 @@ onMounted(loadSales);
   font-size: 17px;
   font-weight: 700;
   color: #0f172a;
-}
-
-.review-box {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  color: #475569;
-}
-
-.review-box p {
-  margin: 0;
-  line-height: 1.7;
-}
-
-.review-box span {
-  color: #94a3b8;
-  font-size: 13px;
 }
 
 @media (max-width: 980px) {

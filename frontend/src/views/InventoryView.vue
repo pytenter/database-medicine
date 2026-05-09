@@ -3,7 +3,6 @@
     <div class="toolbar">
       <div>
         <h3 class="page-title">库存管理</h3>
-        <p class="page-subtitle">维护当前门店库存数量和预警阈值。</p>
       </div>
       <div class="toolbar-actions">
         <el-input v-model="keyword" placeholder="按药品名称或厂商搜索" style="width: 260px;" clearable @keyup.enter="loadInventory" />
@@ -37,13 +36,13 @@
         <el-form-item label="所属门店">
           <el-input :model-value="currentUser?.store_name || '-'" disabled />
         </el-form-item>
-        <el-form-item label="药品">
+        <el-form-item label="药品 ⭐️">
           <el-select v-model="form.medicine" filterable style="width: 100%;" :disabled="Boolean(editingId)">
             <el-option v-for="medicine in medicines" :key="medicine.id" :label="`${medicine.code} - ${medicine.name}`" :value="medicine.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="库存数量"><el-input-number v-model="form.quantity" :min="0" style="width: 100%;" /></el-form-item>
-        <el-form-item label="预警阈值"><el-input-number v-model="form.warning_threshold" :min="0" style="width: 100%;" /></el-form-item>
+        <el-form-item label="库存数量 ⭐️"><el-input-number v-model="form.quantity" :min="0" style="width: 100%;" /></el-form-item>
+        <el-form-item label="预警阈值 ⭐️"><el-input-number v-model="form.warning_threshold" :min="0" style="width: 100%;" /></el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -110,6 +109,22 @@ const getSubmitErrorMessage = (error, fallback) => {
 
 const submitForm = async () => {
   const payload = { ...form, store: currentUser?.store };
+  if (!payload.store) {
+    ElMessage.warning("当前账号未关联门店，无法维护库存。");
+    return;
+  }
+  if (!payload.medicine) {
+    ElMessage.warning("请选择药品。");
+    return;
+  }
+  if (payload.quantity === null || payload.quantity === undefined || Number(payload.quantity) < 0) {
+    ElMessage.warning("请填写不小于 0 的库存数量。");
+    return;
+  }
+  if (payload.warning_threshold === null || payload.warning_threshold === undefined || Number(payload.warning_threshold) < 0) {
+    ElMessage.warning("请填写不小于 0 的预警阈值。");
+    return;
+  }
   try {
     if (editingId.value) {
       await updateInventoryApi(editingId.value, payload);

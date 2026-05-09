@@ -2,8 +2,7 @@
   <el-container style="min-height: 100vh;">
     <el-aside width="250px" class="aside-panel">
       <div class="brand-block">
-        <div class="brand-tag">数据库课程设计</div>
-        <h1>连锁药店管理系统</h1>
+        <h1><span>连锁药店</span><span>管理系统</span></h1>
         <p>{{ auth.user?.full_name || auth.user?.username }}</p>
       </div>
       <el-menu :default-active="route.path" router class="side-menu">
@@ -20,7 +19,6 @@
       <el-header class="header-panel">
         <div>
           <h2>{{ currentTitle }}</h2>
-          <p>基于 Vue、Django 和 openGauss 的连锁药店管理系统</p>
         </div>
       </el-header>
       <el-main class="main-panel">
@@ -54,8 +52,6 @@ const allMenus = [
   { path: "/shift-schedules", label: "班次排班", roles: ["pharmacy_admin"] },
   { path: "/sales/create", label: "销售开单", roles: ["salesperson"] },
   { path: "/sales/records", label: "订单信息", roles: ["system_admin", "pharmacy_admin", "salesperson"] },
-  { path: "/sales/logistics", label: "物流信息", roles: ["salesperson"] },
-  { path: "/sales/reviews", label: "订单评价", roles: ["salesperson"] },
 ];
 
 const visibleMenus = computed(() => allMenus.filter((item) => item.roles.includes(auth.role)));
@@ -94,17 +90,16 @@ const handleLogout = () => {
 .brand-block h1 {
   margin: 10px 0 8px;
   font-size: 26px;
+  line-height: 1.2;
+}
+
+.brand-block h1 span {
+  display: block;
 }
 
 .brand-block p {
   margin: 0;
   color: rgba(248, 250, 252, 0.78);
-}
-
-.brand-tag {
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  color: #9ae6b4;
 }
 
 .side-menu {

@@ -28,7 +28,6 @@
         <div class="chart-head">
           <div>
             <h4>近十天收入统计</h4>
-            <p>按数据库销售订单汇总每日收入</p>
           </div>
           <span class="chart-mark">折线图</span>
         </div>
@@ -45,7 +44,6 @@
         <div class="chart-head">
           <div>
             <h4>近十天订单统计</h4>
-            <p>按数据库订单记录统计每日单量</p>
           </div>
           <span class="chart-mark">柱状图</span>
         </div>
@@ -63,7 +61,6 @@
         <div class="chart-head">
           <div>
             <h4>药品类别统计</h4>
-            <p>按库存数量统计各药品类别占比</p>
           </div>
         </div>
         <div class="donut-body">
@@ -88,7 +85,6 @@
         <div class="chart-head">
           <div>
             <h4>公告信息</h4>
-            <p>读取数据库中已发布的系统公告</p>
           </div>
         </div>
         <div class="notice-list">
@@ -105,8 +101,7 @@
     <section class="page-card access-card">
       <div class="chart-head">
         <div>
-          <h4>近七日业务记录</h4>
-          <p>按订单、物流和评价记录统计系统活跃度</p>
+          <h4>近七日订单记录</h4>
         </div>
       </div>
       <div class="access-bars">

@@ -3,7 +3,6 @@
     <div class="toolbar">
       <div>
         <h3 class="page-title">厂商管理</h3>
-        <p class="page-subtitle">维护药品生产厂商的联系人和联系电话信息。</p>
       </div>
       <div class="toolbar-actions">
         <el-input v-model="keyword" placeholder="输入厂商名称搜索" style="width: 260px;" clearable @keyup.enter="loadManufacturers" />
@@ -29,7 +28,7 @@
 
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑厂商' : '新增厂商'" width="520px">
       <el-form :model="form" label-width="100px">
-        <el-form-item label="厂商名称"><el-input v-model="form.name" /></el-form-item>
+        <el-form-item label="厂商名称 ⭐️"><el-input v-model="form.name" /></el-form-item>
         <el-form-item label="联系人"><el-input v-model="form.contact_person" /></el-form-item>
         <el-form-item label="联系电话"><el-input v-model="form.contact_phone" /></el-form-item>
       </el-form>
@@ -88,6 +87,10 @@ const openDialog = (row = null) => {
 };
 
 const submitForm = async () => {
+  if (!form.name.trim()) {
+    ElMessage.warning("请填写厂商名称。");
+    return;
+  }
   try {
     if (editingId.value) {
       await updateManufacturerApi(editingId.value, form);

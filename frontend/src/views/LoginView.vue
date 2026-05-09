@@ -4,7 +4,6 @@
       <div class="login-copy">
         <div class="login-tag">数据库课程设计</div>
         <h1>连锁药店管理系统</h1>
-        <p>Vue 3 + Django + openGauss</p>
       </div>
       <el-form :model="form" :rules="rules" ref="formRef" label-position="top" @keyup.enter="handleLogin">
         <el-form-item label="用户名" prop="username">

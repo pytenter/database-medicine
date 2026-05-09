@@ -18,7 +18,7 @@ from apps.accounts.models import RoleChoices, ShiftSchedule, User
 from apps.announcements.models import Announcement
 from apps.inventory.models import Inventory, PurchaseOrder, PurchaseOrderStatusChoices, Store
 from apps.medicine.models import Manufacturer, Medicine, MedicineCategory
-from apps.sales.models import OrderLogistics, OrderReview, SaleOrder, SaleOrderItem, SaleOrderStatusChoices
+from apps.sales.models import SaleOrder, SaleOrderItem, SaleOrderStatusChoices
 
 
 def C(value: str) -> str:
@@ -223,22 +223,9 @@ def seed_orders(salespeople, medicine_map):
         C(r"\u6731\u5973\u58eb"),
         C(r"\u9648\u5148\u751f"),
     ]
-    logistics_map = {
-        SaleOrderStatusChoices.PENDING_PAYMENT: [C(r"\u8ba2\u5355\u5f85\u4ed8\u6b3e\uff0c\u6682\u672a\u8fdb\u5165\u914d\u9001\u6d41\u7a0b\u3002")],
-        SaleOrderStatusChoices.ORDERED: [C(r"\u7b49\u5f85\u914d\u9001")],
-        SaleOrderStatusChoices.DELIVERING: [C(r"\u7b49\u5f85\u914d\u9001"), C(r"\u914d\u9001\u5458\u6b63\u5728\u914d\u9001")],
-        SaleOrderStatusChoices.COMPLETED: [C(r"\u7b49\u5f85\u914d\u9001"), C(r"\u914d\u9001\u5458\u6b63\u5728\u914d\u9001"), C(r"\u8ba2\u5355\u5df2\u9001\u8fbe")],
-    }
-    review_texts = [
-        C(r"\u670d\u52a1\u70ed\u60c5\uff0c\u9001\u8d27\u5f88\u53ca\u65f6\u3002"),
-        C(r"\u95e8\u5e97\u54cd\u5e94\u5feb\uff0c\u836f\u54c1\u5305\u88c5\u5b8c\u6574\u3002"),
-        C(r"\u836f\u54c1\u8bf4\u660e\u6e05\u695a\uff0c\u8d2d\u4e70\u4f53\u9a8c\u4e0d\u9519\u3002"),
-        C(r"\u7269\u6d41\u901f\u5ea6\u5feb\uff0c\u6574\u4f53\u6ee1\u610f\u3002"),
-    ]
     order_statuses = [
         SaleOrderStatusChoices.PENDING_PAYMENT,
         SaleOrderStatusChoices.ORDERED,
-        SaleOrderStatusChoices.DELIVERING,
         SaleOrderStatusChoices.COMPLETED,
     ]
     medicine_keys = list(medicine_map.keys())
@@ -275,20 +262,6 @@ def seed_orders(salespeople, medicine_map):
             inv_b.quantity = max(inv_b.quantity - qty_b, 0)
             inv_a.save(update_fields=["quantity", "updated_at"])
             inv_b.save(update_fields=["quantity", "updated_at"])
-            for content in logistics_map[status]:
-                OrderLogistics.objects.create(
-                    order=order,
-                    content=content,
-                    operator_name=salesperson.full_name,
-                    status_after=status,
-                )
-            if status == SaleOrderStatusChoices.COMPLETED:
-                OrderReview.objects.create(
-                    order=order,
-                    rating=5 - (idx % 2),
-                    content=review_texts[idx % len(review_texts)],
-                    reviewer_name=customer_name,
-                )
 
 
 with transaction.atomic():
@@ -455,5 +428,3 @@ with transaction.atomic():
     print("shift_schedule:", ShiftSchedule.objects.count())
     print("sale_order:", SaleOrder.objects.count())
     print("sale_order_item:", SaleOrderItem.objects.count())
-    print("order_logistics:", OrderLogistics.objects.count())
-    print("order_review:", OrderReview.objects.count())
