@@ -1,139 +1,449 @@
-# 连锁药店管理系统
+# 连锁药店系统
 
-基于 `Vue 3`、`Django REST Framework` 和 `openGauss` 的前后端分离项目，用于连锁药店的账号管理、药品管理、库存管理、销售管理、公告管理和数据看板展示。
+## 1. 项目概述
 
-这份 README 以“队友如何稳定复现项目”为目标编写，覆盖：
+- **项目名称：** 连锁药店系统
+- **项目类型：** 数据库应用系统课程设计
+- **核心数据库：** openGauss
+- **系统架构：** Vue 3 前端 + Django REST Framework 后端 + openGauss 数据库
+- **推荐运行方式：** Docker Compose 或本地前后端分离开发
 
-- 本地 Docker Compose 一键运行
-- 本地前后端分离开发
-- 云服务器部署
-- Docker Hub 拉镜像失败时的处理办法
-- 容器状态、日志和常见故障排查
+本项目面向连锁药店的日常经营管理场景，覆盖门店、人员、药品、厂商、库存、采购、销售、排班、公告和数据看板等业务。系统按照真实药店管理边界设计，不包含物流跟踪、订单评价等平台型电商功能。
 
-## 1. 项目简介
+系统包含三类角色：
 
-系统包含 3 类角色：
+| 角色 | 主要职责 | 数据范围 |
+|---|---|---|
+| 系统管理员 | 管理门店、药店管理员、销售人员、公告和连锁经营数据 | 全部门店 |
+| 药店管理员 | 管理厂商、药品、库存、采购订单、销售人员排班 | 所属门店 |
+| 销售人员 | 查询可售药品、创建销售订单、查看授权销售记录 | 所属门店 |
 
-- `系统管理员`：管理药店管理员、销售员、门店、公告和看板
-- `药店管理员`：管理药品、厂商、库存、采购单和排班
-- `销售员`：查询药品、创建销售单和查看授权订单记录
+## 2. 功能概览
 
-## 2. 技术栈
+| 模块 | 功能说明 |
+|---|---|
+| 登录认证 | JWT 登录、角色识别、前端路由守卫 |
+| 门店管理 | 门店新增、编辑、停用、搜索、详情查看，门店编码自动生成 |
+| 用户管理 | 药店管理员和销售人员新增、编辑、停用、密码重置 |
+| 厂商管理 | 厂商新增、编辑、停用、搜索，联系人和联系电话必填 |
+| 药品管理 | 药品新增、编辑、停用、搜索，药品编码自动生成 |
+| 药品分类 | 分类新增和维护 |
+| 库存管理 | 门店库存维护、库存预警、低库存筛选、CSV 导出 |
+| 采购订单 | 采购单号自动生成，采购明细按药品进价和数量自动计算金额 |
+| 销售开单 | 选择库存药品加入订单，客户名称和联系电话必填，库存事务扣减 |
+| 销售记录 | 按订单编号、客户、电话、日期查询销售记录和明细 |
+| 排班管理 | 按星期选择排班，维护销售人员班次 |
+| 公告管理 | 系统公告发布和展示 |
+| 数据看板 | 营业额、订单、库存风险、热销药品、门店对比等统计展示 |
 
-### 前端
+## 3. 技术栈
 
-- `Vue 3`
-- `Vite`
-- `Vue Router`
-- `Pinia`
-- `Axios`
-- `Element Plus`
+### 3.1 前端
 
-### 后端
+- Vue 3
+- Vite
+- Vue Router
+- Pinia
+- Axios
+- Element Plus
 
-- `Python 3.9`
-- `Django 4.2`
-- `Django REST Framework`
-- `Simple JWT`
-- `gunicorn`
+### 3.2 后端
 
-### 数据库
+- Python 3.9
+- Django 4.2
+- Django REST Framework
+- Simple JWT
+- gunicorn
 
-- `openGauss 5.0.1`
-- `Docker`
+### 3.3 数据库与部署
 
-## 3. 目录结构
+- openGauss 5.0.1
+- SQL 初始化脚本
+- Docker Compose
+- nginx 前端静态资源服务
+
+## 4. 系统架构
+
+```mermaid
+flowchart LR
+    U[用户浏览器] --> F[Vue 3 前端]
+    F -->|Axios /api| B[Django REST Framework 后端]
+    B -->|ORM / SQL| D[(openGauss 数据库)]
+    D --> V[v_medicine_stock 库存视图]
+    D --> T[约束 / 索引 / 触发器]
+```
+
+前端负责页面展示、表单交互、菜单权限和数据可视化；后端负责认证、权限校验、业务校验、事务处理和统计聚合；openGauss 负责保存业务数据，并通过主键、外键、唯一约束、检查约束、视图和触发器保证数据完整性。
+
+## 5. 目录结构
 
 ```text
 backend/
   apps/
+    accounts/          用户、角色、排班
+    announcements/     公告
+    common/            公共模型、编号、看板统计
+    inventory/         门店、库存、采购订单
+    medicine/          厂商、分类、药品
+    sales/             销售订单
   config/
-  opengauss_backend/
   scripts/
-  .env.example
   manage.py
   requirements.txt
 frontend/
   src/
-  .env.example
-  package.json
-  vite.config.js
+    api/               前端 API 封装
+    layout/            主布局和侧边栏
+    router/            路由权限
+    stores/            Pinia 状态
+    views/             页面组件
 sql/
-  schema.sql
-  init_data.sql
+  schema.sql           数据库结构
+  init_data.sql        演示数据
 docker-compose.yml
 start_project.bat
 stop_project.bat
 README.md
 ```
 
-## 4. 推荐复现方式
+## 6. 数据库设计
 
-项目推荐两种使用方式：
+### 6.1 主要实体
 
-### 方式 A：Docker Compose 一键运行
+| 实体 | 表名 | 说明 |
+|---|---|---|
+| 门店 | `store` | 连锁药店门店信息 |
+| 用户 | `sys_user` | 登录账号、角色和所属门店 |
+| 公告 | `announcement` | 系统公告 |
+| 厂商 | `manufacturer` | 药品生产厂商 |
+| 药品分类 | `medicine_category` | 药品分类 |
+| 药品 | `medicine` | 药品主数据 |
+| 库存 | `inventory` | 门店级药品库存 |
+| 采购订单 | `purchase_order` | 采购订单主表 |
+| 采购明细 | `purchase_order_item` | 采购药品、数量、进价和金额 |
+| 排班 | `shift_schedule` | 销售人员班次 |
+| 销售订单 | `sale_order` | 销售订单主表 |
+| 销售明细 | `sale_order_item` | 销售药品、数量、单价和金额 |
+| 操作日志 | `operation_log` | 数据库触发器记录销售出库操作 |
 
-适合：
+### 6.2 角色主导 E-R 图
 
-- 第一次拉代码，想最快跑起来
-- 只需要体验功能，不急着改代码
-- 希望数据库初始化自动完成
+本项目的 E-R 图按照系统实际权限拆分为三组：系统管理员、药店管理员、销售人员。每张图都以对应角色作为中心节点，只展示该角色直接管理或直接产生的数据，避免把所有表放进一张图造成线条交叉。
 
-这套方式会同时启动：
+#### 6.2.1 角色权限总览
 
-- `db`：openGauss
-- `backend`：Django API
-- `frontend`：nginx 托管的前端页面
+```mermaid
+flowchart LR
+    SYS_ADMIN["系统管理员<br/>sys_user.id PK<br/>role = system_admin"]
+    STORE_ADMIN["药店管理员<br/>sys_user.id PK<br/>role = pharmacy_admin<br/>store_id FK"]
+    SALESPERSON["销售人员<br/>sys_user.id PK<br/>role = salesperson<br/>store_id FK"]
+    STORE["门店<br/>store.id PK<br/>code UK<br/>name UK"]
 
-### 方式 B：前后端分离开发
+    SYS_ADMIN ==>|"管理门店、人员、公告、经营数据"| STORE
+    STORE ==>|"分配所属门店"| STORE_ADMIN
+    STORE ==>|"分配所属门店"| SALESPERSON
+    STORE_ADMIN ==>|"维护门店经营资料"| STORE
+    SALESPERSON ==>|"完成门店销售开单"| STORE
 
-适合：
-
-- 需要频繁修改前端或后端代码
-- 需要 Vite 热更新
-- 需要单独调试 Django 接口
-
-这套方式通常只用 Docker 跑数据库，然后本地分别运行：
-
-- `python manage.py runserver`
-- `npm run dev`
-
-如果你是第一次接手项目，建议先走方式 A；确认项目能完整运行后，再切换到方式 B 做开发。
-
-## 5. 方式 A：Docker Compose 一键运行
-
-### 5.1 环境要求
-
-请先确认本机已安装：
-
-- `Git`
-- `Docker Desktop` 或其他可用 Docker 环境
-- 可用网络环境，用于拉取或导入 Docker 镜像
-
-建议确认以下端口未被占用：
-
-- `5432`：openGauss
-- `8000`：后端
-- `8080`：前端
-
-### 5.2 拉取代码
-
-```powershell
-git clone <你的仓库地址>
-cd database
+    classDef role fill:#FFE8CC,stroke:#D9480F,stroke-width:3px,color:#3B1D00
+    classDef store fill:#E7F5FF,stroke:#1971C2,stroke-width:2px,color:#102A43
+    class SYS_ADMIN,STORE_ADMIN,SALESPERSON role
+    class STORE store
 ```
 
-如果你收到的是压缩包，解压后进入项目根目录即可。
+#### 6.2.2 系统管理员 E-R 图
 
-### 5.3 配置根目录环境变量
+系统管理员负责连锁层面的基础资料和账号管理，不直接参与采购或销售业务。
 
-在项目根目录执行：
+```mermaid
+flowchart LR
+    SYS_ADMIN["系统管理员<br/>sys_user.id PK<br/>role = system_admin"]
+
+    subgraph SYS_SCOPE["系统管理员管理范围"]
+        STORE["门店 store<br/>id PK<br/>code UK<br/>name UK"]
+        ADMIN["药店管理员账号 sys_user<br/>id PK<br/>role = pharmacy_admin<br/>store_id FK"]
+        STAFF["销售人员账号 sys_user<br/>id PK<br/>role = salesperson<br/>store_id FK"]
+        ANN["公告 announcement<br/>id PK<br/>created_by_id FK"]
+    end
+
+    SYS_ADMIN ==>|"新增 / 编辑 / 停用"| STORE
+    SYS_ADMIN ==>|"新增 / 编辑 / 停用 / 重置密码"| ADMIN
+    SYS_ADMIN ==>|"新增 / 编辑 / 停用 / 重置密码"| STAFF
+    SYS_ADMIN ==>|"发布 / 编辑 / 停用"| ANN
+
+    STORE -->|"1:N store_id"| ADMIN
+    STORE -->|"1:N store_id"| STAFF
+    SYS_ADMIN -.->|"1:N created_by_id"| ANN
+
+    classDef role fill:#FFE8CC,stroke:#D9480F,stroke-width:3px,color:#3B1D00
+    classDef data fill:#FFF4E6,stroke:#F08C00,color:#3B2305
+    classDef store fill:#E7F5FF,stroke:#1971C2,stroke-width:2px,color:#102A43
+    class SYS_ADMIN role
+    class STORE store
+    class ADMIN,STAFF,ANN data
+```
+
+#### 6.2.3 药店管理员 E-R 图
+
+药店管理员围绕所属门店维护经营资料。采购订单采用“采购主表 + 采购明细表”，采购总额由采购明细自动汇总。
+
+```mermaid
+flowchart LR
+    STORE_ADMIN["药店管理员<br/>sys_user.id PK<br/>role = pharmacy_admin<br/>store_id FK"]
+    STORE["所属门店 store<br/>id PK"]
+
+    subgraph PHARMACY_SCOPE["药店管理员管理范围"]
+        MFR["厂商 manufacturer<br/>id PK<br/>name UK"]
+        CAT["药品分类 medicine_category<br/>id PK<br/>name UK"]
+        MED["药品 medicine<br/>id PK<br/>code UK<br/>manufacturer_id FK<br/>category_id FK"]
+        INV["库存 inventory<br/>id PK<br/>store_id FK<br/>medicine_id FK"]
+        PO["采购订单 purchase_order<br/>id PK<br/>order_no UK<br/>store_id FK<br/>manufacturer_id FK"]
+        POI["采购明细 purchase_order_item<br/>id PK<br/>order_id FK<br/>medicine_id FK"]
+        SHIFT["排班 shift_schedule<br/>id PK<br/>store_id FK<br/>salesperson_id FK"]
+    end
+
+    STORE -->|"1:N store_id"| STORE_ADMIN
+    STORE_ADMIN ==>|"维护"| MFR
+    STORE_ADMIN ==>|"维护"| CAT
+    STORE_ADMIN ==>|"维护"| MED
+    STORE_ADMIN ==>|"维护库存"| INV
+    STORE_ADMIN ==>|"创建采购单"| PO
+    STORE_ADMIN ==>|"安排销售人员班次"| SHIFT
+
+    MFR -->|"1:N manufacturer_id"| MED
+    CAT -->|"1:N category_id"| MED
+    STORE -->|"1:N store_id"| INV
+    MED -->|"1:N medicine_id"| INV
+    STORE -->|"1:N store_id"| PO
+    MFR -->|"1:N manufacturer_id"| PO
+    PO -->|"1:N order_id"| POI
+    MED -->|"1:N medicine_id"| POI
+    STORE -->|"1:N store_id"| SHIFT
+
+    classDef role fill:#FFE8CC,stroke:#D9480F,stroke-width:3px,color:#3B1D00
+    classDef store fill:#E7F5FF,stroke:#1971C2,stroke-width:2px,color:#102A43
+    classDef data fill:#E6FCF5,stroke:#0CA678,color:#073B2A
+    class STORE_ADMIN role
+    class STORE store
+    class MFR,CAT,MED,INV,PO,POI,SHIFT data
+```
+
+采购金额计算规则：
+
+```text
+采购明细金额 = 药品进价 × 采购数量
+采购订单总额 = 同一采购订单下所有采购明细金额之和
+```
+
+#### 6.2.4 销售人员 E-R 图
+
+销售人员只负责所属门店的销售开单和销售记录查看。销售订单不包含物流信息、订单评价和订单状态；客户名称、联系电话为必填项。
+
+```mermaid
+flowchart LR
+    SALESPERSON["销售人员<br/>sys_user.id PK<br/>role = salesperson<br/>store_id FK"]
+    STORE["所属门店 store<br/>id PK"]
+
+    subgraph SALE_SCOPE["销售人员业务范围"]
+        INV["可售库存 inventory<br/>id PK<br/>store_id FK<br/>medicine_id FK"]
+        MED["药品 medicine<br/>id PK<br/>code UK<br/>retail_price"]
+        SO["销售订单 sale_order<br/>id PK<br/>order_no UK<br/>store_id FK<br/>salesperson_id FK"]
+        SOI["销售明细 sale_order_item<br/>id PK<br/>order_id FK<br/>medicine_id FK"]
+        LOG["操作日志 operation_log<br/>id PK<br/>operator_id FK"]
+    end
+
+    STORE -->|"1:N store_id"| SALESPERSON
+    SALESPERSON ==>|"查询可售药品"| INV
+    SALESPERSON ==>|"创建销售订单"| SO
+    SALESPERSON -.->|"触发销售出库日志"| LOG
+
+    STORE -->|"1:N store_id"| INV
+    MED -->|"1:N medicine_id"| INV
+    STORE -->|"1:N store_id"| SO
+    SALESPERSON -->|"1:N salesperson_id"| SO
+    SO -->|"1:N order_id"| SOI
+    MED -->|"1:N medicine_id"| SOI
+
+    classDef role fill:#FFE8CC,stroke:#D9480F,stroke-width:3px,color:#3B1D00
+    classDef store fill:#E7F5FF,stroke:#1971C2,stroke-width:2px,color:#102A43
+    classDef data fill:#F3F0FF,stroke:#7048E8,color:#24164F
+    class SALESPERSON role
+    class STORE store
+    class INV,MED,SO,SOI,LOG data
+```
+
+销售金额计算规则：
+
+```text
+销售明细金额 = 药品零售价 × 销售数量
+销售订单总额 = 同一销售订单下所有销售明细金额之和
+```
+
+### 6.3 实体关系说明
+
+| 关系 | 基数 | 说明 |
+|---|---|---|
+| 门店 - 用户 | 1:N | 一个门店可以分配多个药店管理员和销售人员 |
+| 用户 - 公告 | 1:N | 系统管理员可以发布多条公告 |
+| 厂商 - 药品 | 1:N | 一个厂商可以生产多种药品 |
+| 药品分类 - 药品 | 1:N | 一个分类下可以包含多种药品 |
+| 门店 - 库存 | 1:N | 一个门店维护多条药品库存记录 |
+| 药品 - 库存 | 1:N | 同一种药品可以存在于多个门店库存中 |
+| 门店 - 采购订单 | 1:N | 一个门店可以创建多张采购订单 |
+| 采购订单 - 采购明细 | 1:N | 一张采购订单包含多条采购药品明细 |
+| 门店 - 销售订单 | 1:N | 一个门店可以产生多张销售订单 |
+| 销售订单 - 销售明细 | 1:N | 一张销售订单包含多条销售药品明细 |
+| 销售人员 - 排班 | 1:N | 一个销售人员可以有多条排班记录 |
+
+### 6.4 约束、索引、视图和触发器
+
+| 类型 | 设计内容 |
+|---|---|
+| 主键 | 所有业务表均使用 `id` 作为主键 |
+| 唯一约束 | 门店编码、门店名称、用户名、厂商名称、分类名称、药品编码、采购单号、销售单号 |
+| 外键约束 | 用户-门店、药品-厂商、药品-分类、库存-门店/药品、订单-门店/用户、明细-订单/药品 |
+| 检查约束 | 用户角色、药品价格、库存数量、采购数量、销售数量、订单金额 |
+| 索引 | 药品名称、药品编码、厂商名称、库存门店、订单时间、采购状态等高频查询字段 |
+| 视图 | `v_medicine_stock` 汇总门店、药品、厂商、库存和库存预警状态 |
+| 触发器 | `fn_set_updated_at` 自动更新时间；`fn_log_sale_item` 记录销售出库日志 |
+
+## 7. 编号规则
+
+系统中的关键业务编号由系统自动生成，避免人工输入导致重复或格式不统一。
+
+| 编号 | 示例 | 规则说明 |
+|---|---|---|
+| 门店编码 | `ST0001` | 按现有最大序号递增 |
+| 药品编码 | `MED0001` | 按现有最大序号递增 |
+| 采购单号 | `PO202605090001` | 前缀 + 日期 + 当日序号 |
+| 销售单号 | `SO202605090001` | 前缀 + 日期 + 当日序号 |
+
+## 8. 核心业务流程
+
+### 8.1 登录与权限
+
+```mermaid
+flowchart TD
+    A[打开系统] --> B{是否已有 Token}
+    B -- 否 --> C[进入登录页]
+    B -- 是 --> D[读取当前用户信息]
+    D --> E{角色是否允许访问路由}
+    E -- 否 --> F[跳转到首页]
+    E -- 是 --> G[显示对应菜单和页面]
+```
+
+### 8.2 采购订单创建
+
+```mermaid
+flowchart TD
+    A[药店管理员新增采购单] --> B[选择厂商]
+    B --> C[选择该厂商下的药品]
+    C --> D[填写采购数量]
+    D --> E[系统读取药品进价]
+    E --> F[计算明细金额]
+    F --> G[汇总采购总额]
+    G --> H[保存采购订单和采购明细]
+```
+
+### 8.3 销售订单创建
+
+```mermaid
+flowchart TD
+    A[销售人员查询可售药品] --> B[加入订单明细]
+    B --> C[填写客户名称和联系电话]
+    C --> D[提交销售订单]
+    D --> E{库存是否充足}
+    E -- 否 --> F[返回库存不足提示]
+    E -- 是 --> G[创建销售订单]
+    G --> H[创建销售明细]
+    H --> I[扣减库存]
+    I --> J[写入操作日志]
+    J --> K[返回销售单号]
+```
+
+## 9. 运行方式
+
+### 9.1 Docker Compose 一键运行
+
+适合第一次复现项目或只需要演示功能。
 
 ```powershell
 Copy-Item .env.example .env
+docker compose up -d --build
 ```
 
-然后编辑根目录 `.env`，至少确认这些值：
+启动后访问：
+
+- 前端：`http://127.0.0.1:8080`
+- 后端：`http://127.0.0.1:8000`
+- API 前缀：`http://127.0.0.1:8000/api`
+
+停止服务：
+
+```powershell
+docker compose down
+```
+
+如果需要清空数据库卷并重新初始化：
+
+```powershell
+docker compose down -v
+docker compose up -d --build
+```
+
+### 9.2 前后端分离开发
+
+适合需要频繁修改代码的开发场景。
+
+1. 启动数据库：
+
+```powershell
+Copy-Item .env.example .env
+docker compose up -d db
+```
+
+2. 启动后端：
+
+```powershell
+Copy-Item backend\.env.example backend\.env
+cd backend
+python -m pip install -r requirements.txt
+python scripts\init_compose_db.py
+python manage.py runserver
+```
+
+3. 启动前端：
+
+```powershell
+Copy-Item frontend\.env.example frontend\.env
+cd frontend
+npm.cmd install
+npm.cmd run dev
+```
+
+本地开发访问地址：
+
+- 前端：`http://127.0.0.1:5173`
+- 后端：`http://127.0.0.1:8000`
+
+### 9.3 Windows 快速启动脚本
+
+项目根目录提供：
+
+```powershell
+.\start_project.bat
+.\stop_project.bat
+```
+
+使用前请确保：
+
+- 本地 openGauss 已在 `127.0.0.1:5432` 运行
+- `backend/.env` 已配置
+- Python 和 Node.js 依赖已安装
+
+## 10. 环境变量
+
+根目录 `.env` 用于 Docker Compose：
 
 ```env
 SECRET_KEY=replace-with-a-secure-secret-key
@@ -142,7 +452,7 @@ ALLOWED_HOSTS=127.0.0.1,localhost,backend
 CORS_ALLOWED_ORIGINS=http://127.0.0.1:8080,http://localhost:8080
 DB_NAME=pharmacy_system
 DB_USER=gaussdb
-DB_PASSWORD=你自己设置的数据库密码
+DB_PASSWORD=your-password
 DB_PORT=5432
 INIT_DB_DEMO_DATA=True
 OPENGAUSS_IMAGE=enmotech/opengauss:5.0.1
@@ -151,171 +461,7 @@ NODE_BASE_IMAGE=node:20-alpine
 NGINX_BASE_IMAGE=nginx:1.27-alpine
 ```
 
-说明：
-
-- `DB_PASSWORD` 可自定义，但后续相关配置必须一致
-- `INIT_DB_DEMO_DATA=True` 表示首次初始化时自动导入演示数据
-- 四个 `*_IMAGE` 变量用于在 Docker Hub 不可达时切换镜像来源
-- `.env` 不要提交到 Git
-
-### 5.4 启动全部服务
-
-```powershell
-docker compose up -d --build
-```
-
-首次启动会做这些事情：
-
-1. 拉取 openGauss、Python、Node、nginx 相关镜像
-2. 构建前后端镜像
-3. 启动数据库容器
-4. 后端自动等待数据库可连接
-5. 后端自动创建 `pharmacy_system` 数据库
-6. 若数据库为空，自动执行：
-   - `sql/schema.sql`
-   - `sql/init_data.sql`
-7. 启动前端容器
-
-### 5.5 查看运行状态
-
-```powershell
-docker compose ps
-```
-
-如果三项服务都为 `Up`，说明容器已经正常运行。
-
-查看日志：
-
-```powershell
-docker logs pharmacy-opengauss --tail 100
-docker logs pharmacy-backend --tail 100
-docker logs pharmacy-frontend --tail 100
-```
-
-### 5.6 访问项目
-
-启动完成后访问：
-
-- 前端：`http://127.0.0.1:8080`
-- 后端：`http://127.0.0.1:8000`
-- API 前缀：`http://127.0.0.1:8000/api`
-
-### 5.7 停止服务
-
-```powershell
-docker compose down
-```
-
-如果你想连数据库卷一起删除，重新做一次全新初始化：
-
-```powershell
-docker compose down -v
-```
-
-## 6. Docker Hub 拉镜像失败时怎么办
-
-这是这次复现里最常见的障碍。
-
-典型现象：
-
-```text
-Get "https://registry-1.docker.io/v2/": timeout
-```
-
-### 6.1 先测试镜像源连通性
-
-在终端执行：
-
-```powershell
-curl.exe -I --max-time 15 https://docker.m.daocloud.io/v2/
-curl.exe -I --max-time 15 https://docker.1ms.run/v2/
-```
-
-如果返回 `401`、`302`、`404` 之类 HTTP 响应，说明镜像源可达。
-
-### 6.2 临时手动拉取并改回原标签
-
-这是最稳妥的无配置文件方案。以服务器 Linux 为例：
-
-```bash
-docker pull docker.1ms.run/enmotech/opengauss:5.0.1
-docker tag docker.1ms.run/enmotech/opengauss:5.0.1 enmotech/opengauss:5.0.1
-
-docker pull docker.1ms.run/library/python:3.9-slim
-docker tag docker.1ms.run/library/python:3.9-slim python:3.9-slim
-
-docker pull docker.1ms.run/library/node:20-alpine
-docker tag docker.1ms.run/library/node:20-alpine node:20-alpine
-
-docker pull docker.1ms.run/library/nginx:1.27-alpine
-docker tag docker.1ms.run/library/nginx:1.27-alpine nginx:1.27-alpine
-```
-
-拉取完成后再执行：
-
-```bash
-docker compose up -d --build --pull never
-```
-
-### 6.3 使用 `.env` 覆盖基础镜像
-
-如果你已经有稳定可用的镜像前缀，也可以在 `.env` 中直接改成替代镜像，例如：
-
-```env
-OPENGAUSS_IMAGE=docker.1ms.run/enmotech/opengauss:5.0.1
-PYTHON_BASE_IMAGE=docker.1ms.run/library/python:3.9-slim
-NODE_BASE_IMAGE=docker.1ms.run/library/node:20-alpine
-NGINX_BASE_IMAGE=docker.1ms.run/library/nginx:1.27-alpine
-```
-
-这样重新执行 `docker compose up -d --build` 时，会直接从替代镜像源构建。
-
-## 7. 方式 B：前后端分离开发
-
-这套方式更适合日常开发。
-
-### 7.1 环境要求
-
-请先安装：
-
-- `Python 3.9`
-- `Node.js 20+`
-- `npm`
-- `Docker`
-
-### 7.2 第一步：先启动数据库
-
-建议直接复用仓库里的 Compose，只启动数据库服务：
-
-```powershell
-Copy-Item .env.example .env
-```
-
-编辑根目录 `.env`，保证里面的 `DB_PASSWORD` 是你打算使用的密码。
-
-然后执行：
-
-```powershell
-docker compose up -d db
-```
-
-启动成功后，本机数据库连接信息如下：
-
-- Host：`127.0.0.1`
-- Port：`5432`
-- Database：`pharmacy_system`
-- User：`gaussdb`
-- Password：根目录 `.env` 中的 `DB_PASSWORD`
-
-### 7.3 第二步：配置后端环境变量
-
-进入后端目录，复制示例配置：
-
-```powershell
-Copy-Item backend\.env.example backend\.env
-```
-
-编辑 `backend/.env`，重点确认这些值：
+后端 `backend/.env` 用于本地开发：
 
 ```env
 SECRET_KEY=replace-with-a-secure-secret-key
@@ -324,215 +470,37 @@ ALLOWED_HOSTS=127.0.0.1,localhost
 CORS_ALLOWED_ORIGINS=http://127.0.0.1:5173,http://localhost:5173
 DB_NAME=pharmacy_system
 DB_USER=gaussdb
-DB_PASSWORD=和根目录 .env 中保持一致
+DB_PASSWORD=your-password
 DB_HOST=127.0.0.1
 DB_PORT=5432
 DB_ADMIN_DB=postgres
 INIT_DB_DEMO_DATA=True
 ```
 
-最关键的一点：
+注意：`.env`、`backend/.env`、`frontend/.env` 不应提交到 Git。
 
-- `backend/.env` 里的 `DB_PASSWORD` 必须和根目录 `.env` 一致，否则后端连不上数据库
+## 11. 演示账号
 
-### 7.4 第三步：安装后端依赖
+| 用户名 | 密码 | 角色 |
+|---|---|---|
+| `sysadmin` | `Admin@123` | 系统管理员 |
+| `storeadmin` | `Admin@123` | 药店管理员 |
+| `sales01` | `Admin@123` | 销售人员 |
+
+## 12. 本地验证
+
+后端检查：
 
 ```powershell
 cd backend
-python -m pip install -r requirements.txt
-```
-
-### 7.5 第四步：初始化数据库
-
-```powershell
-python scripts\init_compose_db.py
-```
-
-说明：
-
-- 项目以 `sql/schema.sql` 和 `sql/init_data.sql` 为准
-- 不要把 `python manage.py migrate` 当作主初始化方式
-
-### 7.6 第五步：启动后端
-
-```powershell
 python manage.py check
-python manage.py runserver
 ```
 
-后端默认地址：
-
-- `http://127.0.0.1:8000`
-- API 前缀：`http://127.0.0.1:8000/api`
-
-### 7.7 第六步：配置前端环境变量
-
-```powershell
-Copy-Item frontend\.env.example frontend\.env
-```
-
-默认情况下 `frontend/.env` 内容如下，通常不需要修改：
-
-```env
-VITE_API_BASE_URL=/api
-```
-
-### 7.8 第七步：安装并启动前端
+前端构建：
 
 ```powershell
 cd frontend
-npm.cmd install
-npm.cmd run dev
-```
-
-前端默认地址：
-
-- `http://127.0.0.1:5173`
-
-本地开发时，Vite 会自动把 `/api` 代理到 `http://127.0.0.1:8000`。
-
-## 8. Windows 一键启动方式
-
-项目根目录提供了两个脚本：
-
-- `start_project.bat`
-- `stop_project.bat`
-
-适用前提：
-
-- 已安装 Python 和 Node.js
-- 已准备好 `backend/.env`
-- 本地 openGauss 已在 `127.0.0.1:5432` 运行
-- 后端和前端依赖已安装完成
-
-启动：
-
-```powershell
-.\start_project.bat
-```
-
-停止：
-
-```powershell
-.\stop_project.bat
-```
-
-## 9. 云服务器部署记录版步骤
-
-这是这次实际验证成功的方案，适合阿里云 Ubuntu + 宝塔 + Docker。
-
-### 9.1 服务器准备
-
-建议至少具备：
-
-- Ubuntu 22.04 或兼容 Linux
-- 已安装 Docker 和 Docker Compose
-- 已放行安全组端口：`22`、`8888`、`8080`、`8000`
-
-说明：
-
-- `8888` 用于宝塔面板
-- `8080` 用于当前前端临时访问
-- `8000` 用于后端接口临时访问
-- `5432` 不建议长期对公网开放
-
-### 9.2 拉取项目
-
-```bash
-mkdir -p /www/wwwroot
-cd /www/wwwroot
-git clone <你的仓库地址> pharmacy-system
-cd pharmacy-system
-```
-
-### 9.3 配置环境变量
-
-```bash
-cp .env.example .env
-```
-
-示例：
-
-```env
-SECRET_KEY=你自己的随机字符串
-DEBUG=False
-ALLOWED_HOSTS=你的公网IP,127.0.0.1,localhost,backend
-CORS_ALLOWED_ORIGINS=http://你的公网IP:8080,http://127.0.0.1:8080,http://localhost:8080
-DB_NAME=pharmacy_system
-DB_USER=gaussdb
-DB_PASSWORD=你自己的数据库密码
-DB_PORT=5432
-INIT_DB_DEMO_DATA=True
-```
-
-### 9.4 若 Docker Hub 不可达，先手动导入镜像
-
-```bash
-docker pull docker.1ms.run/enmotech/opengauss:5.0.1
-docker tag docker.1ms.run/enmotech/opengauss:5.0.1 enmotech/opengauss:5.0.1
-
-docker pull docker.1ms.run/library/python:3.9-slim
-docker tag docker.1ms.run/library/python:3.9-slim python:3.9-slim
-
-docker pull docker.1ms.run/library/node:20-alpine
-docker tag docker.1ms.run/library/node:20-alpine node:20-alpine
-
-docker pull docker.1ms.run/library/nginx:1.27-alpine
-docker tag docker.1ms.run/library/nginx:1.27-alpine nginx:1.27-alpine
-```
-
-### 9.5 启动服务
-
-```bash
-docker compose up -d --build --pull never
-```
-
-### 9.6 查看状态
-
-```bash
-docker compose ps
-docker logs pharmacy-opengauss --tail 100
-docker logs pharmacy-backend --tail 100
-docker logs pharmacy-frontend --tail 100
-```
-
-### 9.7 访问地址
-
-- 前端：`http://你的公网IP:8080`
-- 后端：`http://你的公网IP:8000`
-
-当前这套方式是“先跑起来”的直连方式；后续更规范的做法是：
-
-- 使用宝塔反向代理
-- 只开放 `80/443`
-- 关闭公网 `8000`
-- 关闭公网 `5432`
-- 绑定域名并配置 HTTPS
-
-## 10. 演示账号
-
-可直接使用以下账号登录：
-
-- `sysadmin / Admin@123`
-- `storeadmin / Admin@123`
-- `sales01 / Admin@123`
-
-前提是数据库已成功导入演示数据。
-
-## 11. 本地验证步骤
-
-建议至少完成以下检查：
-
-- 能打开前端登录页
-- 能正常登录系统管理员账号
-- 登录后能进入首页看板
-- 药品、库存、销售等页面能正常加载数据
-
-后端自检：
-
-```powershell
-cd backend
-python manage.py check
+npm.cmd run build
 ```
 
 烟雾测试：
@@ -542,105 +510,84 @@ cd backend
 python scripts\smoke_check.py
 ```
 
-这个脚本会检查：
+建议至少验证：
 
-- 登录接口是否可用
-- 当前用户接口是否正常
-- 用户列表查询是否正常
-- 药品模糊搜索是否正常
-- 库存查询是否正常
-- 销售创建后库存是否正确扣减
-- 测试结束后是否成功清理测试订单
+- 三类角色均可登录
+- 不同角色只能看到授权菜单
+- 新增门店、药品、采购单时编号自动生成
+- 新增采购单时采购总额由明细自动汇总
+- 销售开单时客户名称、联系电话必填
+- 销售成功后库存正确扣减
+- 销售记录能查看订单明细
+- 库存预警和数据看板能正常展示
 
-## 12. 团队协作约定
+## 13. SQL 文件说明
 
-为了保证每个人复现结果一致，建议统一遵守这些规则：
+| 文件 | 作用 |
+|---|---|
+| `sql/schema.sql` | 创建表、主键、外键、唯一约束、检查约束、索引、视图和触发器 |
+| `sql/init_data.sql` | 插入演示门店、用户、厂商、分类、药品、库存、采购、销售、排班和公告数据 |
+| `sql/announcement_extension.sql` | 兼容保留文件，公告结构已合并到 `schema.sql` |
+| `sql/sales_extension.sql` | 兼容保留文件，销售结构已合并到 `schema.sql` |
 
-1. `sql/schema.sql` 是数据库结构的权威来源
-2. `sql/init_data.sql` 是演示数据的权威来源
-3. 不要把 Django migration 当作主建库方式
-4. 如果改了表结构，必须同步更新 `sql/schema.sql`
-5. 如果改了演示数据，提交前同步更新 `sql/init_data.sql`
-6. `.env`、`backend/.env`、`frontend/.env` 不要提交到仓库
-7. 前端统一通过 `/api` 访问后端，避免每个人本地都写死不同地址
+团队协作时以 `sql/schema.sql` 和 `sql/init_data.sql` 作为数据库结构与演示数据的权威来源。修改表结构或演示数据后，需要同步更新对应 SQL 文件。
 
-## 13. 常见问题
+## 14. 常见问题
 
-### 13.1 `docker compose up` 失败
+### 14.1 Docker Hub 镜像拉取失败
 
-常见原因：
+如果出现网络超时，可以先从可用镜像源手动拉取并重新打标签：
 
-- Docker 没启动
-- Docker Hub 拉镜像失败
-- 5432、8000、8080 端口已被占用
+```bash
+docker pull docker.1ms.run/enmotech/opengauss:5.0.1
+docker tag docker.1ms.run/enmotech/opengauss:5.0.1 enmotech/opengauss:5.0.1
 
-先检查：
+docker pull docker.1ms.run/library/python:3.9-slim
+docker tag docker.1ms.run/library/python:3.9-slim python:3.9-slim
 
-```powershell
-docker compose ps
+docker pull docker.1ms.run/library/node:20-alpine
+docker tag docker.1ms.run/library/node:20-alpine node:20-alpine
+
+docker pull docker.1ms.run/library/nginx:1.27-alpine
+docker tag docker.1ms.run/library/nginx:1.27-alpine nginx:1.27-alpine
 ```
 
-### 13.2 数据库容器启动失败
+然后执行：
 
-这次复现里最常见的点有：
-
-- openGauss 镜像需要 `privileged: true`
-- 旧版 `healthcheck` 会把数据库误判为 unhealthy
-- 如果卷里已有半初始化数据，需先：
-
-```powershell
-docker compose down -v
+```bash
+docker compose up -d --build --pull never
 ```
 
-再重新启动。
-
-### 13.3 Docker Hub 不可达
-
-可采用两种方式：
-
-- 先从可达镜像源 `pull + tag` 回原始镜像名
-- 在 `.env` 中直接覆盖 `OPENGAUSS_IMAGE`、`PYTHON_BASE_IMAGE`、`NODE_BASE_IMAGE`、`NGINX_BASE_IMAGE`
-
-### 13.4 登录成功但页面没有数据
+### 14.2 页面能打开但没有数据
 
 优先检查：
 
-- 是否执行了 `sql/init_data.sql`
+- 数据库是否已执行 `sql/schema.sql`
+- 是否已导入 `sql/init_data.sql`
 - `INIT_DB_DEMO_DATA` 是否为 `True`
-- 前端请求是否正确代理到后端 `/api`
+- 前端 `/api` 是否正确代理到后端
 
-## 14. 提交前检查清单
+### 14.3 修改字段后页面仍显示旧数据
 
-每位队友在提交代码前，建议至少确认：
+建议重新构建前端并刷新浏览器缓存：
 
-- 前端能正常启动
-- 后端能正常启动
-- 数据库能正常连接
-- 三个角色都能登录
-- 自己修改涉及的数据结构已同步到 SQL 文件
-- 没有把 `.env` 或数据库密码提交到仓库
+```powershell
+cd frontend
+npm.cmd run build
+```
 
-## 15. 推荐给新队友的最短复现路径
+本地开发环境可重启 Vite：
 
-如果只是想最快复现项目，请直接按下面做：
+```powershell
+npm.cmd run dev
+```
 
-1. 拉取仓库
-2. 在根目录执行 `Copy-Item .env.example .env`
-3. 把 `.env` 里的 `DB_PASSWORD` 改成你自己设置的值
-4. 如果 Docker Hub 不通，先手动 `pull + tag` 必要镜像
-5. 执行 `docker compose up -d --build`
-6. 打开 `http://127.0.0.1:8080`
-7. 使用 `sysadmin / Admin@123` 登录
+## 15. 提交前检查清单
 
-如果只是想本地开发，请按下面做：
-
-1. `docker compose up -d db`
-2. 配好 `backend/.env`
-3. 在 `backend` 中执行：
-   - `python -m pip install -r requirements.txt`
-   - `python scripts\init_compose_db.py`
-   - `python manage.py runserver`
-4. 在 `frontend` 中执行：
-   - `npm.cmd install`
-   - `npm.cmd run dev`
-5. 打开 `http://127.0.0.1:5173`
+- 后端 `python manage.py check` 通过
+- 前端 `npm.cmd run build` 通过
+- 三类演示账号均可登录
+- 修改过的数据库结构已同步到 `sql/schema.sql`
+- 修改过的演示数据已同步到 `sql/init_data.sql`
+- README、开发手册、运行手册中的功能描述与系统当前行为一致
+- 没有提交 `.env` 或数据库密码
