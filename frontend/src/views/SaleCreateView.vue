@@ -37,10 +37,10 @@
           </div>
 
           <el-form :model="saleForm" label-position="top" class="order-form">
-            <el-form-item label="客户名称">
+            <el-form-item label="客户名称 ⭐️">
               <el-input v-model="saleForm.customer_name" placeholder="请输入客户姓名" />
             </el-form-item>
-            <el-form-item label="联系电话">
+            <el-form-item label="联系电话 ⭐️">
               <el-input v-model="saleForm.customer_phone" placeholder="请输入联系电话" />
             </el-form-item>
             <el-form-item label="订单备注">
@@ -128,6 +128,16 @@ const totalAmount = computed(() =>
 const formatMoney = (value) => `￥${Number(value || 0).toFixed(2)}`;
 
 const submitSale = async () => {
+  const customerName = saleForm.customer_name.trim();
+  const customerPhone = saleForm.customer_phone.trim();
+  if (!customerName) {
+    ElMessage.warning("请填写客户名称。");
+    return;
+  }
+  if (!customerPhone) {
+    ElMessage.warning("请填写联系电话。");
+    return;
+  }
   if (!cart.value.length) {
     ElMessage.warning("请至少添加一种药品。");
     return;
@@ -135,8 +145,8 @@ const submitSale = async () => {
   submitting.value = true;
   try {
     const payload = {
-      customer_name: saleForm.customer_name,
-      customer_phone: saleForm.customer_phone,
+      customer_name: customerName,
+      customer_phone: customerPhone,
       remark: saleForm.remark,
       items: cart.value.map((item) => ({ medicine_id: item.medicine_id, quantity: item.quantity })),
     };
@@ -148,7 +158,14 @@ const submitSale = async () => {
     saleForm.remark = "";
     await loadInventory();
   } catch (error) {
-    ElMessage.error(error.response?.data?.items?.[0] || "创建销售订单失败。");
+    const data = error.response?.data || {};
+    ElMessage.error(
+      data.detail ||
+        data.customer_name?.[0] ||
+        data.customer_phone?.[0] ||
+        data.items?.[0] ||
+        "创建销售订单失败。",
+    );
   } finally {
     submitting.value = false;
   }

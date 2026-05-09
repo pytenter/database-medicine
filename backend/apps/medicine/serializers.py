@@ -9,6 +9,20 @@ class ManufacturerSerializer(CleanDisplaySerializerMixin, serializers.ModelSeria
     class Meta:
         model = Manufacturer
         fields = "__all__"
+        extra_kwargs = {
+            "contact_person": {
+                "required": True,
+                "allow_blank": False,
+                "trim_whitespace": True,
+                "error_messages": {"required": "请填写联系人。", "blank": "请填写联系人。"},
+            },
+            "contact_phone": {
+                "required": True,
+                "allow_blank": False,
+                "trim_whitespace": True,
+                "error_messages": {"required": "请填写联系电话。", "blank": "请填写联系电话。"},
+            },
+        }
 
 
 class MedicineCategorySerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
@@ -55,4 +69,7 @@ class MedicineSerializer(CleanDisplaySerializerMixin, serializers.ModelSerialize
 
     def create(self, validated_data):
         validated_data["code"] = next_prefixed_sequence_code(Medicine, "code", "MED")
+        validated_data.setdefault("specification", "常规规格")
+        validated_data.setdefault("unit", "盒")
+        validated_data.setdefault("approval_number", "")
         return super().create(validated_data)

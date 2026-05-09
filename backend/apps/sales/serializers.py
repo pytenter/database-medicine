@@ -64,8 +64,18 @@ class SaleOrderSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializ
 
 
 class SaleCreateSerializer(serializers.Serializer):
-    customer_name = serializers.CharField(required=False, allow_blank=True)
-    customer_phone = serializers.CharField(required=False, allow_blank=True)
+    customer_name = serializers.CharField(
+        required=True,
+        allow_blank=False,
+        trim_whitespace=True,
+        error_messages={"required": "请填写客户名称。", "blank": "请填写客户名称。"},
+    )
+    customer_phone = serializers.CharField(
+        required=True,
+        allow_blank=False,
+        trim_whitespace=True,
+        error_messages={"required": "请填写联系电话。", "blank": "请填写联系电话。"},
+    )
     remark = serializers.CharField(required=False, allow_blank=True)
     items = SaleOrderItemWriteSerializer(many=True)
 

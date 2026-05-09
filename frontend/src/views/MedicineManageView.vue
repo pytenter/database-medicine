@@ -39,8 +39,6 @@
       <el-form :model="form" label-width="140px">
         <el-form-item label="药品编码"><el-input :model-value="editingId ? form.code : nextMedicineCode" disabled /></el-form-item>
         <el-form-item label="药品名称 ⭐️"><el-input v-model="form.name" /></el-form-item>
-        <el-form-item label="规格 ⭐️"><el-input v-model="form.specification" /></el-form-item>
-        <el-form-item label="单位 ⭐️"><el-input v-model="form.unit" /></el-form-item>
         <el-form-item label="进价 ⭐️"><el-input-number v-model="form.purchase_price" :min="0.01" :precision="2" style="width: 100%;" /></el-form-item>
         <el-form-item label="零售价 ⭐️"><el-input-number v-model="form.retail_price" :min="0.01" :precision="2" style="width: 100%;" /></el-form-item>
         <el-form-item label="生产厂商 ⭐️">
@@ -53,7 +51,6 @@
             <el-option v-for="item in categories" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="批准文号"><el-input v-model="form.approval_number" /></el-form-item>
         <el-form-item label="生产日期"><el-date-picker v-model="form.production_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;" /></el-form-item>
         <el-form-item label="有效期至"><el-date-picker v-model="form.expiry_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;" /></el-form-item>
         <el-form-item label="状态"><el-switch v-model="form.is_active" /></el-form-item>
@@ -67,8 +64,8 @@
     <el-dialog v-model="manufacturerDialog" title="新增厂商" width="500px">
       <el-form :model="manufacturerForm" label-width="140px">
         <el-form-item label="厂商名称 ⭐️"><el-input v-model="manufacturerForm.name" /></el-form-item>
-        <el-form-item label="联系人"><el-input v-model="manufacturerForm.contact_person" /></el-form-item>
-        <el-form-item label="联系电话"><el-input v-model="manufacturerForm.contact_phone" /></el-form-item>
+        <el-form-item label="联系人 ⭐️"><el-input v-model="manufacturerForm.contact_person" /></el-form-item>
+        <el-form-item label="联系电话 ⭐️"><el-input v-model="manufacturerForm.contact_phone" /></el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="manufacturerDialog = false">取消</el-button>
@@ -202,14 +199,6 @@ const submitForm = async () => {
     ElMessage.warning("请填写药品名称。");
     return;
   }
-  if (!payload.specification.trim()) {
-    ElMessage.warning("请填写药品规格。");
-    return;
-  }
-  if (!payload.unit.trim()) {
-    ElMessage.warning("请填写药品单位。");
-    return;
-  }
   if (!payload.manufacturer) {
     ElMessage.warning("请选择生产厂商。");
     return;
@@ -264,14 +253,28 @@ const submitManufacturer = async () => {
     ElMessage.warning("请填写厂商名称。");
     return;
   }
+  if (!manufacturerForm.contact_person.trim()) {
+    ElMessage.warning("请填写联系人。");
+    return;
+  }
+  if (!manufacturerForm.contact_phone.trim()) {
+    ElMessage.warning("请填写联系电话。");
+    return;
+  }
   try {
-    await createManufacturerApi(manufacturerForm);
+    await createManufacturerApi({
+      ...manufacturerForm,
+      name: manufacturerForm.name.trim(),
+      contact_person: manufacturerForm.contact_person.trim(),
+      contact_phone: manufacturerForm.contact_phone.trim(),
+    });
     ElMessage.success("厂商创建成功。");
     manufacturerDialog.value = false;
     Object.assign(manufacturerForm, { name: "", contact_person: "", contact_phone: "" });
     loadBaseData();
   } catch (error) {
-    ElMessage.error(error.response?.data?.detail || "保存厂商失败。");
+    const data = error.response?.data || {};
+    ElMessage.error(data.detail || data.contact_person?.[0] || data.contact_phone?.[0] || "保存厂商失败。");
   }
 };
 

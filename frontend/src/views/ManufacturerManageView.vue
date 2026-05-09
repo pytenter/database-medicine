@@ -29,8 +29,8 @@
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑厂商' : '新增厂商'" width="520px">
       <el-form :model="form" label-width="100px">
         <el-form-item label="厂商名称 ⭐️"><el-input v-model="form.name" /></el-form-item>
-        <el-form-item label="联系人"><el-input v-model="form.contact_person" /></el-form-item>
-        <el-form-item label="联系电话"><el-input v-model="form.contact_phone" /></el-form-item>
+        <el-form-item label="联系人 ⭐️"><el-input v-model="form.contact_person" /></el-form-item>
+        <el-form-item label="联系电话 ⭐️"><el-input v-model="form.contact_phone" /></el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -91,18 +91,33 @@ const submitForm = async () => {
     ElMessage.warning("请填写厂商名称。");
     return;
   }
+  if (!form.contact_person.trim()) {
+    ElMessage.warning("请填写联系人。");
+    return;
+  }
+  if (!form.contact_phone.trim()) {
+    ElMessage.warning("请填写联系电话。");
+    return;
+  }
+  const payload = {
+    ...form,
+    name: form.name.trim(),
+    contact_person: form.contact_person.trim(),
+    contact_phone: form.contact_phone.trim(),
+  };
   try {
     if (editingId.value) {
-      await updateManufacturerApi(editingId.value, form);
+      await updateManufacturerApi(editingId.value, payload);
       ElMessage.success("厂商信息更新成功。");
     } else {
-      await createManufacturerApi(form);
+      await createManufacturerApi(payload);
       ElMessage.success("厂商创建成功。");
     }
     dialogVisible.value = false;
     loadManufacturers();
   } catch (error) {
-    ElMessage.error(error.response?.data?.detail || "保存厂商失败。");
+    const data = error.response?.data || {};
+    ElMessage.error(data.detail || data.contact_person?.[0] || data.contact_phone?.[0] || "保存厂商失败。");
   }
 };
 
