@@ -81,7 +81,7 @@ CREATE TABLE medicine (
     code VARCHAR(30) NOT NULL UNIQUE,
     name VARCHAR(100) NOT NULL,
     specification VARCHAR(100) NOT NULL,
-    unit VARCHAR(20) NOT NULL DEFAULT '?',
+    unit VARCHAR(20) NOT NULL DEFAULT '盒',
     purchase_price NUMERIC(10, 2) NOT NULL,
     retail_price NUMERIC(10, 2) NOT NULL,
     manufacturer_id INTEGER NOT NULL,
