@@ -4,7 +4,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from apps.accounts.permissions import IsPharmacyAdmin, IsSystemAdmin
-from apps.common.numbering import next_daily_code
+from apps.common.numbering import next_daily_code, next_prefixed_sequence_code
 from apps.inventory.models import Inventory, PurchaseOrder, Store
 from apps.inventory.serializers import InventorySerializer, PurchaseOrderSerializer, StoreSerializer
 
@@ -16,6 +16,10 @@ class StoreViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Store.objects.all().order_by("id")
+
+    @action(detail=False, methods=["get"], url_path="next-code")
+    def next_code(self, request):
+        return Response({"code": next_prefixed_sequence_code(Store, "code", "ST")})
 
 
 class InventoryPermission(permissions.BasePermission):

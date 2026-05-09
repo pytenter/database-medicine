@@ -1,6 +1,7 @@
 import http from "./http";
 
 export const getStoresApi = (params) => http.get("/inventory/stores/", { params });
+export const getNextStoreCodeApi = () => http.get("/inventory/stores/next-code/");
 export const createStoreApi = (payload) => http.post("/inventory/stores/", payload);
 export const updateStoreApi = (id, payload) => http.put(`/inventory/stores/${id}/`, payload);
 export const deleteStoreApi = (id) => http.delete(`/inventory/stores/${id}/`);

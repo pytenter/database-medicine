@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.db import transaction
 from rest_framework import serializers
 
-from apps.common.numbering import next_daily_code
+from apps.common.numbering import next_daily_code, next_prefixed_sequence_code
 from apps.common.text import CleanDisplaySerializerMixin, is_placeholder_text
 from apps.inventory.models import Inventory, PurchaseOrder, PurchaseOrderItem, Store
 
@@ -11,7 +11,12 @@ from apps.inventory.models import Inventory, PurchaseOrder, PurchaseOrderItem, S
 class StoreSerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Store
+        read_only_fields = ["code"]
         fields = "__all__"
+
+    def create(self, validated_data):
+        validated_data["code"] = next_prefixed_sequence_code(Store, "code", "ST")
+        return super().create(validated_data)
 
 
 class InventorySerializer(CleanDisplaySerializerMixin, serializers.ModelSerializer):

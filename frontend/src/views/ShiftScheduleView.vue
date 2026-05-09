@@ -8,7 +8,9 @@
         <el-select v-model="salespersonFilter" clearable placeholder="选择销售人员" style="width: 180px;">
           <el-option v-for="item in salespeople" :key="item.id" :label="item.full_name" :value="item.id" />
         </el-select>
-        <el-date-picker v-model="dateFilter" type="date" value-format="YYYY-MM-DD" placeholder="排班日期" style="width: 170px;" />
+        <el-select v-model="weekdayFilter" clearable placeholder="选择星期" style="width: 160px;">
+          <el-option v-for="item in weekdayOptions" :key="item.value" :label="item.label" :value="item.value" />
+        </el-select>
         <el-button @click="loadSchedules">查询</el-button>
         <el-button @click="resetFilters">重置</el-button>
         <el-button type="primary" @click="openDialog()">新增排班</el-button>
@@ -39,7 +41,11 @@
             <el-option v-for="item in salespeople" :key="item.id" :label="item.full_name" :value="item.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="排班日期 ⭐️"><el-date-picker v-model="form.shift_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;" /></el-form-item>
+        <el-form-item label="排班星期 ⭐️">
+          <el-select v-model="form.shift_weekday" style="width: 100%;">
+            <el-option v-for="item in weekdayOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="班次类型 ⭐️">
           <el-select v-model="form.shift_period" style="width: 100%;">
             <el-option v-for="item in shiftOptions" :key="item.value" :label="item.label" :value="item.value" />
@@ -73,10 +79,28 @@ const currentUser = JSON.parse(localStorage.getItem("current_user") || "null");
 const schedules = ref([]);
 const salespeople = ref([]);
 const salespersonFilter = ref("");
-const dateFilter = ref("");
+const weekdayFilter = ref("");
 const dialogVisible = ref(false);
 const editingId = ref(null);
 const weekdayLabels = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+const weekdayOptions = [
+  { value: 1, label: "星期一" },
+  { value: 2, label: "星期二" },
+  { value: 3, label: "星期三" },
+  { value: 4, label: "星期四" },
+  { value: 5, label: "星期五" },
+  { value: 6, label: "星期六" },
+  { value: 0, label: "星期日" },
+];
+const weekdayDateMap = {
+  0: "2026-04-05",
+  1: "2026-04-06",
+  2: "2026-04-07",
+  3: "2026-04-08",
+  4: "2026-04-09",
+  5: "2026-04-10",
+  6: "2026-04-11",
+};
 const shiftOptions = [
   { value: "morning", label: "早班" },
   { value: "afternoon", label: "中班" },
@@ -85,7 +109,7 @@ const shiftOptions = [
 const form = reactive({
   store: currentUser?.store || null,
   salesperson: null,
-  shift_date: "",
+  shift_weekday: 1,
   shift_period: "morning",
   start_time: "08:00:00",
   end_time: "12:00:00",
@@ -99,12 +123,21 @@ const getShiftWeekday = (dateText) => {
   return weekdayLabels[date.getDay()];
 };
 
+const getWeekdayValue = (dateText) => {
+  if (!dateText) return null;
+  const date = new Date(`${dateText}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.getDay();
+};
+
+const getShiftDateFromWeekday = (weekday) => weekdayDateMap[weekday] || weekdayDateMap[1];
+
 const resetForm = () => {
   editingId.value = null;
   Object.assign(form, {
     store: currentUser?.store || null,
     salesperson: null,
-    shift_date: "",
+    shift_weekday: 1,
     shift_period: "morning",
     start_time: "08:00:00",
     end_time: "12:00:00",
@@ -115,12 +148,15 @@ const resetForm = () => {
 const loadSchedules = async () => {
   const params = {};
   if (salespersonFilter.value) params.salesperson = salespersonFilter.value;
-  if (dateFilter.value) params.shift_date = dateFilter.value;
   const { data } = await getShiftSchedulesApi(params);
-  schedules.value = data.map((item) => ({
+  const mappedData = data.map((item) => ({
     ...item,
+    shift_weekday_value: getWeekdayValue(item.shift_date),
     shift_weekday: getShiftWeekday(item.shift_date),
   }));
+  schedules.value = weekdayFilter.value === "" || weekdayFilter.value === null || weekdayFilter.value === undefined
+    ? mappedData
+    : mappedData.filter((item) => item.shift_weekday_value === weekdayFilter.value);
 };
 
 const loadSalespeople = async () => {
@@ -130,7 +166,7 @@ const loadSalespeople = async () => {
 
 const resetFilters = () => {
   salespersonFilter.value = "";
-  dateFilter.value = "";
+  weekdayFilter.value = "";
   loadSchedules();
 };
 
@@ -141,7 +177,7 @@ const openDialog = (row = null) => {
     Object.assign(form, {
       store: row.store,
       salesperson: row.salesperson,
-      shift_date: row.shift_date,
+      shift_weekday: getWeekdayValue(row.shift_date),
       shift_period: row.shift_period,
       start_time: row.start_time,
       end_time: row.end_time,
@@ -153,7 +189,15 @@ const openDialog = (row = null) => {
 
 const submitForm = async () => {
   try {
-    const payload = { ...form, store: currentUser?.store };
+    const payload = {
+      store: currentUser?.store,
+      salesperson: form.salesperson,
+      shift_date: getShiftDateFromWeekday(form.shift_weekday),
+      shift_period: form.shift_period,
+      start_time: form.start_time,
+      end_time: form.end_time,
+      note: form.note,
+    };
     if (!payload.store) {
       ElMessage.warning("当前账号未关联门店，无法创建排班。");
       return;
@@ -162,8 +206,8 @@ const submitForm = async () => {
       ElMessage.warning("请选择销售人员。");
       return;
     }
-    if (!payload.shift_date) {
-      ElMessage.warning("请选择排班日期。");
+    if (form.shift_weekday === null || form.shift_weekday === undefined) {
+      ElMessage.warning("请选择排班星期。");
       return;
     }
     if (!payload.shift_period) {

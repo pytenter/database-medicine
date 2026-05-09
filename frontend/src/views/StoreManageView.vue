@@ -158,7 +158,7 @@
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑门店' : '新增门店'" width="640px">
       <el-form :model="form" label-width="120px">
         <el-form-item label="门店编码 ⭐️">
-          <el-input v-model="form.code" />
+          <el-input :model-value="editingId ? form.code : nextStoreCode" disabled />
         </el-form-item>
         <el-form-item label="门店名称 ⭐️">
           <el-input v-model="form.name" />
@@ -242,7 +242,7 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 
-import { createStoreApi, deleteStoreApi, getStoresApi, updateStoreApi } from "../api/inventory";
+import { createStoreApi, deleteStoreApi, getNextStoreCodeApi, getStoresApi, updateStoreApi } from "../api/inventory";
 
 const currentUser = JSON.parse(localStorage.getItem("current_user") || "null");
 const canEdit = computed(() => ["system_admin", "pharmacy_admin"].includes(currentUser?.role));
@@ -255,6 +255,7 @@ const filters = reactive({
 const dialogVisible = ref(false);
 const detailVisible = ref(false);
 const editingId = ref(null);
+const nextStoreCode = ref("");
 const selectedStore = ref(null);
 const form = reactive({
   code: "",
@@ -384,7 +385,12 @@ const resetFilters = async () => {
   await loadStores();
 };
 
-const openDialog = (row = null) => {
+const loadNextStoreCode = async () => {
+  const { data } = await getNextStoreCodeApi();
+  nextStoreCode.value = data.code;
+};
+
+const openDialog = async (row = null) => {
   resetForm();
   if (row) {
     editingId.value = row.id;
@@ -396,6 +402,8 @@ const openDialog = (row = null) => {
       address: row.address,
       is_active: row.is_active,
     });
+  } else {
+    await loadNextStoreCode();
   }
   dialogVisible.value = true;
 };
@@ -406,10 +414,6 @@ const openDetail = (row) => {
 };
 
 const submitForm = async () => {
-  if (!form.code.trim()) {
-    ElMessage.warning("请填写门店编码。");
-    return;
-  }
   if (!form.name.trim()) {
     ElMessage.warning("请填写门店名称。");
     return;
@@ -419,6 +423,9 @@ const submitForm = async () => {
     return;
   }
   const payload = { ...form };
+  if (!editingId.value) {
+    delete payload.code;
+  }
   if (editingId.value) {
     await updateStoreApi(editingId.value, payload);
     ElMessage.success("门店信息修改成功。");

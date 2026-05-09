@@ -2,8 +2,10 @@
   <el-container style="min-height: 100vh;">
     <el-aside width="250px" class="aside-panel">
       <div class="brand-block">
-        <h1><span>连锁药店</span><span>管理系统</span></h1>
-        <p>{{ auth.user?.full_name || auth.user?.username }}</p>
+        <div class="brand-mark">+</div>
+        <div>
+          <h1>连锁药店系统</h1>
+        </div>
       </div>
       <el-menu :default-active="route.path" router class="side-menu">
         <el-menu-item v-for="item in visibleMenus" :key="item.path" :index="item.path">
@@ -73,36 +75,85 @@ const handleLogout = () => {
 
 <style scoped>
 .aside-panel {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   padding: 20px;
-  background: linear-gradient(180deg, #0f172a 0%, #12384a 100%);
+  background:
+    radial-gradient(circle at 30px 34px, rgba(45, 212, 191, 0.26), transparent 28px),
+    radial-gradient(circle at 220px 118px, rgba(34, 197, 94, 0.18), transparent 70px),
+    linear-gradient(180deg, #0f172a 0%, #10283a 48%, #0b3b37 100%);
   color: #f8fafc;
 }
 
+.aside-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.8), transparent 78%);
+  pointer-events: none;
+}
+
+.aside-panel::after {
+  content: "";
+  position: absolute;
+  left: -40px;
+  right: -40px;
+  top: 146px;
+  height: 160px;
+  background: linear-gradient(135deg, transparent 18%, rgba(16, 185, 129, 0.18) 18%, rgba(16, 185, 129, 0.02) 54%, transparent 54%);
+  transform: rotate(-8deg);
+  pointer-events: none;
+}
+
 .brand-block {
-  padding: 18px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 16px;
   margin-bottom: 20px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06)),
+    rgba(15, 23, 42, 0.24);
+  border: 1px solid rgba(209, 250, 229, 0.18);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(10px);
+}
+
+.brand-mark {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #064e3b;
+  font-size: 32px;
+  line-height: 1;
+  font-weight: 800;
+  background: linear-gradient(135deg, #d1fae5, #5eead4);
+  box-shadow: 0 10px 22px rgba(45, 212, 191, 0.26);
 }
 
 .brand-block h1 {
-  margin: 10px 0 8px;
-  font-size: 26px;
-  line-height: 1.2;
-}
-
-.brand-block h1 span {
-  display: block;
-}
-
-.brand-block p {
   margin: 0;
-  color: rgba(248, 250, 252, 0.78);
+  font-size: 20px;
+  line-height: 1.15;
+  white-space: nowrap;
+  letter-spacing: 0;
 }
 
 .side-menu {
+  position: relative;
+  z-index: 1;
   border-right: none;
   background: transparent;
 }
@@ -119,6 +170,8 @@ const handleLogout = () => {
 }
 
 .aside-footer {
+  position: relative;
+  z-index: 1;
   margin-top: auto;
   display: flex;
   align-items: center;
@@ -157,7 +210,7 @@ const handleLogout = () => {
   }
 
   .brand-block h1 {
-    font-size: 22px;
+    font-size: 18px;
   }
 
   .header-panel h2 {
