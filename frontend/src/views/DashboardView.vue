@@ -4,8 +4,10 @@
       <div>
         <span class="hero-tag">运营总览</span>
         <h2>{{ greeting }}，{{ auth.user?.full_name || auth.user?.username }}</h2>
-        <p>{{ roleText }}</p>
-        <p>当前时间：{{ nowText }}</p>
+        <div class="time-box">
+          <span>当前时间</span>
+          <strong>{{ nowText }}</strong>
+        </div>
       </div>
       <div class="hero-stats">
         <div v-for="item in topStats" :key="item.label" class="hero-stat">
@@ -19,7 +21,6 @@
       <article v-for="item in summaryCards" :key="item.label" class="page-card summary-card">
         <span>{{ item.label }}</span>
         <h3>{{ item.value }}</h3>
-        <p>{{ item.note }}</p>
       </article>
     </section>
 
@@ -118,7 +119,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 
 import { getDashboardOverviewApi } from "../api/dashboard";
 import { useAuthStore } from "../stores/auth";
@@ -131,16 +132,12 @@ const overview = ref({
   notices: [],
 });
 
-const roleMap = {
-  system_admin: "系统管理员",
-  pharmacy_admin: "药店管理员",
-  salesperson: "销售人员",
-};
 const colorPalette = ["#1f8fff", "#1ed5a4", "#ffb020", "#ff6b6b", "#845ef7", "#12b981"];
 const now = new Date();
 const greeting = now.getHours() < 12 ? "上午好" : now.getHours() < 18 ? "下午好" : "晚上好";
-const nowText = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
-const roleText = computed(() => roleMap[auth.user?.role] || "未知角色");
+const formatDateTime = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}:${String(date.getSeconds()).padStart(2, "0")}`;
+const nowText = ref(formatDateTime(now));
+let clockTimer = null;
 const gridLines = [52, 95, 138, 181, 224];
 const chartBaseY = 222;
 const chartHeight = 170;
@@ -175,10 +172,10 @@ const topStats = computed(() => [
   { label: "员工数量", value: overview.value.top_stats.employee_count },
 ]);
 const summaryCards = computed(() => [
-  { label: "本月订单量", value: `${overview.value.summary.month_order_count} 单`, note: "按当月销售订单实时统计" },
-  { label: "本月收益", value: formatMoney(overview.value.summary.month_revenue), note: "来自当月数据库销售记录" },
-  { label: "本年订单量", value: `${overview.value.summary.year_order_count} 单`, note: "按本年累计订单自动汇总" },
-  { label: "本年收益", value: formatMoney(overview.value.summary.year_revenue), note: "按本年累计销售额实时更新" },
+  { label: "本月订单量", value: `${overview.value.summary.month_order_count} 单` },
+  { label: "本月收益", value: formatMoney(overview.value.summary.month_revenue) },
+  { label: "本年订单量", value: `${overview.value.summary.year_order_count} 单` },
+  { label: "本年收益", value: formatMoney(overview.value.summary.year_revenue) },
 ]);
 
 const incomeSeries = computed(() => overview.value.charts.income_last_10_days || []);
@@ -220,7 +217,18 @@ const activityStats = computed(() => {
   return source.map((item) => ({ ...item, height: Math.max(12, (Number(item.value || 0) / maxValue) * 100) }));
 });
 
-onMounted(loadOverview);
+onMounted(() => {
+  loadOverview();
+  clockTimer = window.setInterval(() => {
+    nowText.value = formatDateTime(new Date());
+  }, 1000);
+});
+
+onUnmounted(() => {
+  if (clockTimer) {
+    window.clearInterval(clockTimer);
+  }
+});
 </script>
 
 <style scoped>
@@ -229,6 +237,9 @@ onMounted(loadOverview);
 .hero-card h2 { margin: 8px 0 10px; font-size: 28px; }
 .hero-card p { margin: 4px 0; color: #64748b; }
 .hero-tag, .chart-mark { display: inline-flex; padding: 6px 10px; border-radius: 999px; background: #eaf8f2; color: #0c7a5c; font-size: 12px; }
+.time-box { display: inline-flex; align-items: center; gap: 10px; margin-top: 10px; padding: 8px 12px; border: 1px solid #d7e7f7; border-radius: 10px; background: #ffffffcc; color: #64748b; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06); }
+.time-box span { font-size: 13px; }
+.time-box strong { color: #334155; font-size: 14px; font-weight: 700; }
 .hero-stats { display: grid; grid-template-columns: repeat(4, minmax(92px, 1fr)); gap: 20px; min-width: 480px; }
 .hero-stat span { color: #94a3b8; font-size: 13px; }
 .hero-stat strong { display: block; margin-top: 8px; color: #16a36f; font-size: 30px; font-weight: 700; }
